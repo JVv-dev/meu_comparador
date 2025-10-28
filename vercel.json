@@ -1,0 +1,9 @@
+{
+  "buildCommand": "pnpm build",
+  "installCommand": "pnpm install",
+  "devCommand": "next dev",
+  "outputDirectory": "frontend/.next",
+  "git": {
+    "rootDir": "frontend"
+  }
+}

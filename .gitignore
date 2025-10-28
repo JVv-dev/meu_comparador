@@ -25,4 +25,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-/meu_comparador_temp/
+
+#env
+.env.local
+.env.development.local
+.env.production.local
