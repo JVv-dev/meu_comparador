@@ -55,7 +55,8 @@ export function ProductComparison() {
         // ****** AJUSTE A URL SE NECESSÁRIO ******
         // Se o backend estiver rodando em outra máquina na rede, use o IP dela
         // Ex: const apiUrl = 'http://192.168.1.10:5001/api/products';
-        const apiUrl = 'http://localhost:5001/api/products'; // Padrão: backend na mesma máquina
+        //const apiUrl = 'http://localhost:5001/api/products'; // Padrão: backend na mesma máquina
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api-comparador-backend.onrender.com/";
 
         console.log(`Buscando produtos de: ${apiUrl}`); // Log para debug
 
