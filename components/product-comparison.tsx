@@ -1,6 +1,7 @@
 // Conteúdo para price-comparison/components/product-comparison.tsx
 "use client"
 
+// --- NOVOS IMPORTS ---
 import { useState, useEffect, useMemo } from "react"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
 import {
@@ -10,16 +11,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+// --- FIM DOS NOVOS IMPORTS ---
+
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { PriceHistoryModal } from "@/components/price-history-modal"
-import { TrendingDown, ExternalLink, Star, ShoppingCart, SearchIcon, AlertTriangle } from "lucide-react"
+import { TrendingDown, ExternalLink, Star, ShoppingCart, SearchIcon, AlertTriangle } from "lucide-react" // Adicionado SearchIcon e AlertTriangle
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Terminal } from "lucide-react"
 
-// ... (Interfaces permanecem iguais) ...
+// Interfaces (mantidas como estavam)
 interface Store {
   name: string
   price: number
@@ -46,21 +49,32 @@ interface Product {
   priceHistory: PriceHistoryEntry[]
 }
 
+// --- FUNÇÃO AUXILIAR PARA ORDENAÇÃO ---
+// Pega o menor preço "válido" (em estoque e > 0) de um produto
 const getLowestPrice = (product: Product): number => {
     const validPrices = product.stores
         .filter(s => s.price > 0 && s.inStock)
         .map(s => s.price);
+    
+    // Retorna Infinity se não houver preços válidos, para que ele vá para o fim da lista
     return validPrices.length > 0 ? Math.min(...validPrices) : Infinity;
 };
 
+
 export function ProductComparison() {
+  // --- ESTADOS ATUALIZADOS ---
+  // 1. masterProducts: A lista original e completa vinda da API
   const [masterProducts, setMasterProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortOption, setSortOption] = useState("default");
 
-  // useEffect (sem mudanças)
+  // 2. Novos estados para os controles
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortOption, setSortOption] = useState("default"); // 'default', 'price-asc', 'price-desc'
+  // --- FIM DOS ESTADOS ATUALIZADOS ---
+
+
+  // useEffect para buscar dados (quase igual, só muda o nome do state)
   useEffect(() => {
     async function fetchProducts() {
       setIsLoading(true);
@@ -90,6 +104,7 @@ export function ProductComparison() {
             throw new Error("Formato de dados inesperado recebido da API.");
         }
         
+        // Seta a lista MESTRA
         setMasterProducts(data);
       } catch (err: any) {
         console.error("Erro detalhado no fetch:", err);
@@ -102,38 +117,38 @@ export function ProductComparison() {
   }, []);
 
   
-  // --- LÓGICA DE FILTRO E ORDENAÇÃO (CORRIGIDA) ---
+  // --- NOVO: LÓGICA DE FILTRO E ORDENAÇÃO ---
+  // Usamos 'useMemo' para recalcular a lista 'filteredProducts'
+  // apenas quando a lista mestra ou os filtros mudarem.
   const filteredProducts = useMemo(() => {
-    // 1. Começa com a lista mestra
-    let productsToFilter = [...masterProducts];
+    let products = [...masterProducts];
 
-    // 2. Aplica Filtro (Barra de Pesquisa)
-    // AQUI ESTAVA O BUG: Eu não estava usando 'productsToFilter'
+    // 1. Aplicar Filtro (Barra de Pesquisa)
     if (searchTerm) {
-      console.log(`Filtrando por: ${searchTerm}`); // Para debug
-      productsToFilter = productsToFilter.filter(product =>
+      products = products.filter(product =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
-    // 3. Aplica Ordenação
+    // 2. Aplicar Ordenação
     if (sortOption === 'price-asc' || sortOption === 'price-desc') {
-      // Usamos .sort() que modifica o array no local
-      productsToFilter.sort((a, b) => {
+      products.sort((a, b) => {
         const priceA = getLowestPrice(a);
         const priceB = getLowestPrice(b);
         return sortOption === 'price-asc' ? priceA - priceB : priceB - priceA;
       });
     }
+    // (A ordenação "default" já é a ordem da API)
     
-    return productsToFilter; // Retorna a lista modificada
-  }, [masterProducts, searchTerm, sortOption]);
-  // --- FIM DA CORREÇÃO ---
+    return products;
+  }, [masterProducts, searchTerm, sortOption]); // Dependências
 
 
-  // Estados e handlers do Modal (sem mudanças)
+  // Estados para o modal (mantidos)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+
+  // Funções de clique (mantidas)
   const handleImageClick = (product: Product) => {
     setSelectedProduct(product)
     setIsModalOpen(true)
@@ -144,7 +159,7 @@ export function ProductComparison() {
 
   // ---- RENDERIZAÇÃO ----
 
-  // Estados de Loading, Erro, e Sem Produtos (sem mudanças)
+  // 1. Estado de Carregamento (igual)
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -176,6 +191,7 @@ export function ProductComparison() {
     );
   }
 
+  // 2. Estado de Erro (igual)
   if (error) {
      return (
         <div className="container mx-auto px-4 py-8 max-w-3xl">
@@ -190,6 +206,7 @@ export function ProductComparison() {
      );
   }
 
+  // 3. Estado Sem Produtos (agora usa masterProducts)
    if (masterProducts.length === 0 && !isLoading) {
       return (
         <div className="container mx-auto px-4 py-8 max-w-7xl text-center">
@@ -211,7 +228,8 @@ export function ProductComparison() {
       );
   }
 
-  // Estado Normal (com produtos)
+
+  // 4. Estado Normal (com produtos)
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <header className="mb-12 text-center">
@@ -221,8 +239,9 @@ export function ProductComparison() {
         </p>
       </header>
       
-      {/* Seção de Filtros (sem mudanças) */}
+      {/* --- NOVA SEÇÃO DE FILTROS --- */}
       <div className="flex flex-col md:flex-row gap-4 mb-8 sticky top-4 z-10 bg-background/90 backdrop-blur-sm p-2 rounded-lg">
+        {/* Barra de Pesquisa */}
         <InputGroup className="flex-1">
           <InputGroupAddon>
             <SearchIcon className="size-4 text-muted-foreground" />
@@ -233,6 +252,8 @@ export function ProductComparison() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </InputGroup>
+
+        {/* Dropdown de Ordenação */}
         <Select value={sortOption} onValueChange={setSortOption}>
           <SelectTrigger className="w-full md:w-[200px]">
             <SelectValue placeholder="Ordenar por" />
@@ -244,11 +265,15 @@ export function ProductComparison() {
           </SelectContent>
         </Select>
       </div>
+      {/* --- FIM DA SEÇÃO DE FILTROS --- */}
 
-      {/* Lista de Produtos (agora mapeia 'filteredProducts' e está correta) */}
+
+      {/* --- LISTA DE PRODUTOS ATUALIZADA --- */}
+      {/* Agora mapeia 'filteredProducts' em vez de 'products' */}
       <div className="space-y-8">
         {filteredProducts.length > 0 ? (
           filteredProducts.map((product) => {
+            // Lógica de cálculo (movida para helper, mas calculamos aqui o desconto)
             const lowestPrice = getLowestPrice(product);
             const highestDiscount = Math.max(
               0,
@@ -265,7 +290,7 @@ export function ProductComparison() {
             return (
               <Card key={product.id} className="overflow-hidden">
                 <div className="grid md:grid-cols-[300px_1fr] gap-6 p-6">
-                  {/* Image Section (sem mudanças) */}
+                  {/* Product Image Section */}
                   <div className="space-y-3">
                     <button onClick={() => handleImageClick(product)} className="relative group cursor-pointer w-full">
                       <div className="aspect-square rounded-lg overflow-hidden bg-muted flex items-center justify-center">
@@ -288,7 +313,7 @@ export function ProductComparison() {
                     </Badge>
                   </div>
 
-                  {/* Details Section (sem mudanças) */}
+                  {/* Product Details Section */}
                   <div className="space-y-4">
                     <div>
                       <h2 className="text-2xl font-bold mb-2 text-balance">{product.name}</h2>
@@ -299,9 +324,10 @@ export function ProductComparison() {
                       )}
                     </div>
 
-                    {/* Stores Comparison (sem mudanças, mas agora deve funcionar) */}
+                    {/* Stores Comparison */}
                     <div className="space-y-3">
                       {product.stores.map((store, index) => {
+                        // Verifica se ESTA loja tem o menor preço
                         const isLowestPrice = store.price === lowestPrice && store.price > 0 && store.inStock;
                         const discount = store.originalPrice && store.originalPrice > store.price && store.inStock
                           ? ((store.originalPrice - store.price) / store.originalPrice) * 100
@@ -315,6 +341,7 @@ export function ProductComparison() {
                             }`}
                           >
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                              {/* Detalhes da Loja */}
                               <div className="flex-1 space-y-2 min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap">
                                   <h3 className="font-semibold text-lg truncate">{store.name}</h3>
@@ -341,6 +368,7 @@ export function ProductComparison() {
                                 <p className="text-sm text-muted-foreground">{store.shipping}</p>
                               </div>
 
+                              {/* Preço e Botão */}
                               <div className="flex flex-col items-end gap-1 flex-shrink-0">
                                 {store.originalPrice && store.originalPrice > store.price && store.inStock && (
                                   <div className="text-sm text-muted-foreground line-through whitespace-nowrap">
@@ -377,6 +405,7 @@ export function ProductComparison() {
             )
           })
         ) : (
+          // --- NOVO: Mensagem para quando não há resultados de filtro ---
           <Alert>
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Nenhum resultado encontrado</AlertTitle>
@@ -387,7 +416,7 @@ export function ProductComparison() {
         )}
       </div>
 
-      {/* Modal (sem mudanças) */}
+      {/* Modal (igual) */}
       {selectedProduct && (
         <PriceHistoryModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} product={selectedProduct} />
       )}
