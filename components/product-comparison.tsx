@@ -125,9 +125,7 @@ export function ProductComparison() {
     // 2. Aplica Ordenação
     if (sortOption === 'price-asc' || sortOption === 'price-desc') {
       
-      // === A CORREÇÃO ESTÁ AQUI ===
-      // Em vez de .sort() (que muta o array), usamos .toSorted() (que retorna um novo array)
-      // Isso é muito mais seguro para o React e evita o erro 'removeChild'.
+      // === Correção de imutabilidade ===
       return productsToFilter.toSorted((a, b) => { 
         const priceA = getLowestPrice(a);
         const priceB = getLowestPrice(b);
@@ -236,7 +234,7 @@ export function ProductComparison() {
           />
         </div>
 
-        {/* Dropdown de Ordenação */}
+        {/* Dropdown de Ordenação (CORRIGIDO) */}
         <Select value={sortOption} onValueChange={setSortOption}>
           <SelectTrigger className="w-full md:w-[200px]">
             <SelectValue placeholder="Ordenar por" />
