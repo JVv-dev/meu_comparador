@@ -111,28 +111,33 @@ export function ProductComparison() {
   }, []); // O array vazio [] faz o useEffect rodar só uma vez
 
   
-  // --- LÓGICA DE FILTRO E ORDENAÇÃO (CORRIGIDA) ---
+  // --- LÓGICA DE FILTRO E ORDENAÇÃO (CORREÇÃO v3) ---
   const filteredProducts = useMemo(() => {
-    // 1. Começa com a lista mestra
     let productsToFilter = [...masterProducts];
 
-    // 2. Aplica Filtro (Barra de Pesquisa)
+    // 1. Aplica Filtro (Barra de Pesquisa)
     if (searchTerm) {
       productsToFilter = productsToFilter.filter(product =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
-    // 3. Aplica Ordenação
+    // 2. Aplica Ordenação
     if (sortOption === 'price-asc' || sortOption === 'price-desc') {
-      productsToFilter.sort((a, b) => {
+      
+      // === A CORREÇÃO ESTÁ AQUI ===
+      // Em vez de .sort() (que muta o array), usamos .toSorted() (que retorna um novo array)
+      // Isso é muito mais seguro para o React e evita o erro 'removeChild'.
+      return productsToFilter.toSorted((a, b) => { 
         const priceA = getLowestPrice(a);
         const priceB = getLowestPrice(b);
         return sortOption === 'price-asc' ? priceA - priceB : priceB - priceA;
       });
+      // === FIM DA CORREÇÃO ===
+
     }
     
-    return productsToFilter; // Retorna a lista modificada
+    return productsToFilter; // Retorna a lista (apenas filtrada, ou na ordem padrão)
   }, [masterProducts, searchTerm, sortOption]); // Dependências
 
 
@@ -303,7 +308,7 @@ export function ProductComparison() {
 
                     {/* Stores Comparison */}
                     <div className="space-y-3">
-                      {/* === AQUI ESTÁ A CORREÇÃO === */}
+                      {/* A correção da key da v2 (key={store.name}) está mantida aqui */}
                       {product.stores.map((store) => { 
                         const isLowestPrice = store.price === lowestPrice && store.price > 0 && store.inStock;
                         const discount = store.originalPrice && store.originalPrice > store.price && store.inStock
@@ -312,12 +317,11 @@ export function ProductComparison() {
 
                         return (
                           <div
-                            key={store.name} // <-- MUDADO DE 'index' PARA 'store.name'
+                            key={store.name} 
                             className={`border rounded-lg p-4 transition-all hover:shadow-md ${
                               isLowestPrice ? "border-primary bg-primary/5" : "border-border"
                             }`}
                           >
-                          {/* O resto do código continua igual */}
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                               {/* Detalhes da Loja */}
                               <div className="flex-1 space-y-2 min-w-0">
