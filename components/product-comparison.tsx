@@ -303,7 +303,8 @@ export function ProductComparison() {
 
                     {/* Stores Comparison */}
                     <div className="space-y-3">
-                      {product.stores.map((store, index) => {
+                      {/* === AQUI ESTÁ A CORREÇÃO === */}
+                      {product.stores.map((store) => { 
                         const isLowestPrice = store.price === lowestPrice && store.price > 0 && store.inStock;
                         const discount = store.originalPrice && store.originalPrice > store.price && store.inStock
                           ? ((store.originalPrice - store.price) / store.originalPrice) * 100
@@ -311,11 +312,12 @@ export function ProductComparison() {
 
                         return (
                           <div
-                            key={index}
+                            key={store.name} // <-- MUDADO DE 'index' PARA 'store.name'
                             className={`border rounded-lg p-4 transition-all hover:shadow-md ${
                               isLowestPrice ? "border-primary bg-primary/5" : "border-border"
                             }`}
                           >
+                          {/* O resto do código continua igual */}
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                               {/* Detalhes da Loja */}
                               <div className="flex-1 space-y-2 min-w-0">
@@ -347,7 +349,7 @@ export function ProductComparison() {
                               {/* Preço e Botão */}
                               <div className="flex flex-col items-end gap-1 flex-shrink-0">
                                 {store.originalPrice && store.originalPrice > store.price && store.inStock && (
-                                  <div className="text-sm text-muted-foreground line-through whitespace-nowDrap">
+                                  <div className="text-sm text-muted-foreground line-through whitespace-nowrap">
                                     R$ {store.originalPrice.toFixed(2).replace(".", ",")}
                                   </div>
                                 )}
