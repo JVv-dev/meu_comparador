@@ -1,8 +1,7 @@
 // Conteúdo para price-comparison/components/product-comparison.tsx
 "use client"
 
-// AGORA USAMOS useState, useEffect (NÃO MAIS useMemo)
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Input } from "@/components/ui/input" 
 import {
   Select,
@@ -109,30 +108,24 @@ export function ProductComparison() {
   }, []); 
 
   
-  // --- LÓGICA DE FILTRO E ORDENAÇÃO (AGORA COM useEffect) ---
-  // Este hook roda toda vez que a lista mestra, a busca ou a ordenação mudam
-  useEffect(() => {
-    let products = [...masterProducts]; // Começa com a cópia da lista mestra
-
+  // --- LÓGICA DE FILTRO E ORDENAÇÃO (REFEITA COM useMemo v7) ---
+  const filteredAndSortedProducts = useMemo(() => {
     // 1. Aplica Filtro (Barra de Pesquisa)
-    if (searchTerm) {
-      products = products.filter(product =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
+    let processedProducts = masterProducts.filter(product =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     // 2. Aplica Ordenação
     if (sortOption !== 'default') {
-      // Usamos .sort() em uma cópia.
-      products.sort((a, b) => {
+      // Cria uma CÓPIA para ordenar, para não mutar o state
+      processedProducts = [...processedProducts].sort((a, b) => {
         const priceA = getLowestPrice(a);
         const priceB = getLowestPrice(b);
         return sortOption === 'price-asc' ? priceA - priceB : priceB - priceA;
       });
     }
     
-    // 3. Seta o state final de exibição
-    setDisplayedProducts(products);
+    return processedProducts;
     
   }, [masterProducts, searchTerm, sortOption]); // Dependências
   // --- FIM DA CORREÇÃO ---
@@ -155,7 +148,6 @@ export function ProductComparison() {
 
   // 1. Estado de Carregamento
   if (isLoading) {
-    // ... (código do skeleton, sem mudanças)
     return (
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <header className="mb-12 text-center">
@@ -249,10 +241,10 @@ export function ProductComparison() {
 
 
       {/* --- LISTA DE PRODUTOS ATUALIZADA --- */}
-      {/* AGORA MAPEIA O NOVO STATE: displayedProducts */}
+      {/* AGORA MAPEIA O 'filteredAndSortedProducts' do useMemo */}
       <div className="space-y-8">
-        {displayedProducts.length > 0 ? (
-          displayedProducts.map((product) => { // <-- MUDANÇA AQUI
+        {filteredAndSortedProducts.length > 0 ? (
+          filteredAndSortedProducts.map((product) => { // <-- MUDANÇA AQUI
             const lowestPrice = getLowestPrice(product);
             const highestDiscount = Math.max(
               0,
