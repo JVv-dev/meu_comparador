@@ -2,7 +2,6 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-// NOVOS IMPORTS
 import { Input } from "@/components/ui/input" 
 import {
   Select,
@@ -11,13 +10,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-// FIM NOVOS IMPORTS
-
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { PriceHistoryModal } from "@/components/price-history-modal"
-import { TrendingDown, ExternalLink, Star, ShoppingCart, SearchIcon, AlertTriangle } from "lucide-react" // Adicionado SearchIcon e AlertTriangle
+import { TrendingDown, ExternalLink, Star, ShoppingCart, SearchIcon, AlertTriangle } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Terminal } from "lucide-react"
@@ -59,22 +56,18 @@ const getLowestPrice = (product: Product): number => {
 
 
 export function ProductComparison() {
-  // ESTADOS ATUALIZADOS
-  const [masterProducts, setMasterProducts] = useState<Product[]>([]); // Lista mestra
+  const [masterProducts, setMasterProducts] = useState<Product[]>([]); 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Estados para os controles
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortOption, setSortOption] = useState("default"); // 'default', 'price-asc', 'price-desc'
+  const [sortOption, setSortOption] = useState("default"); 
 
-  // useEffect para buscar dados
+  // useEffect para buscar dados (sem alteração)
   useEffect(() => {
     async function fetchProducts() {
       setIsLoading(true);
       setError(null);
       try {
-        // AQUI ESTÁ A URL DA SUA API NO RENDER
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api-comparador-backend.onrender.com/";
         console.log(`Buscando produtos de: ${apiUrl}`);
 
@@ -99,7 +92,7 @@ export function ProductComparison() {
             throw new Error("Formato de dados inesperado recebido da API.");
         }
         
-        setMasterProducts(data); // Seta a lista MESTRA
+        setMasterProducts(data);
       } catch (err: any) {
         console.error("Erro detalhado no fetch:", err);
         setError(`Não foi possível carregar os produtos. Detalhe: ${err.message}`);
@@ -108,42 +101,44 @@ export function ProductComparison() {
       }
     }
     fetchProducts();
-  }, []); // O array vazio [] faz o useEffect rodar só uma vez
+  }, []);
 
   
-  // --- LÓGICA DE FILTRO E ORDENAÇÃO (CORREÇÃO v3) ---
+  // --- LÓGICA DE FILTRO E ORDENAÇÃO (CORREÇÃO v5 - A PROVA DE BALAS) ---
   const filteredProducts = useMemo(() => {
-    let productsToFilter = [...masterProducts];
-
     // 1. Aplica Filtro (Barra de Pesquisa)
-    if (searchTerm) {
-      productsToFilter = productsToFilter.filter(product =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
+    // Isso cria um NOVO array 'filtered'
+    const filtered = masterProducts.filter(product =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     // 2. Aplica Ordenação
-    if (sortOption === 'price-asc' || sortOption === 'price-desc') {
-      
-      // === Correção de imutabilidade ===
-      return productsToFilter.toSorted((a, b) => { 
-        const priceA = getLowestPrice(a);
-        const priceB = getLowestPrice(b);
-        return sortOption === 'price-asc' ? priceA - priceB : priceB - priceA;
-      });
-      // === FIM DA CORREÇÃO ===
-
+    if (sortOption === 'default') {
+      return filtered; // Retorna a lista apenas filtrada
     }
+
+    // Se a ordenação não for 'default', criamos um NOVO array ordenado
+    // Usando .slice(0) para clonar, e .sort() para ordenar a cópia.
+    const sorted = filtered.slice(0).sort((a, b) => {
+      const priceA = getLowestPrice(a);
+      const priceB = getLowestPrice(b);
+      
+      if (sortOption === 'price-asc') {
+        return priceA - priceB;
+      } else {
+        return priceB - priceA;
+      }
+    });
+
+    return sorted; // Retorna a lista filtrada E ordenada
     
-    return productsToFilter; // Retorna a lista (apenas filtrada, ou na ordem padrão)
   }, [masterProducts, searchTerm, sortOption]); // Dependências
+  // --- FIM DA CORREÇÃO ---
 
 
-  // Estados para o modal (mantidos)
+  // Estados e handlers do Modal (sem mudanças)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
-
-  // Funções de clique (mantidas)
   const handleImageClick = (product: Product) => {
     setSelectedProduct(product)
     setIsModalOpen(true)
@@ -156,7 +151,6 @@ export function ProductComparison() {
 
   // 1. Estado de Carregamento
   if (isLoading) {
-    // ... (código do skeleton, sem mudanças)
     return (
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <header className="mb-12 text-center">
@@ -228,13 +222,13 @@ export function ProductComparison() {
           <Input
             type="search"
             placeholder="Pesquisar por nome (ex: RTX 4070)..."
-            className="pl-10" // Adiciona padding para o ícone
+            className="pl-10"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
 
-        {/* Dropdown de Ordenação (CORRIGIDO) */}
+        {/* Dropdown de Ordenação (corrigido para onValueChange) */}
         <Select value={sortOption} onValueChange={setSortOption}>
           <SelectTrigger className="w-full md:w-[200px]">
             <SelectValue placeholder="Ordenar por" />
@@ -253,7 +247,6 @@ export function ProductComparison() {
       <div className="space-y-8">
         {filteredProducts.length > 0 ? (
           filteredProducts.map((product) => {
-            // Lógica de cálculo
             const lowestPrice = getLowestPrice(product);
             const highestDiscount = Math.max(
               0,
@@ -306,7 +299,7 @@ export function ProductComparison() {
 
                     {/* Stores Comparison */}
                     <div className="space-y-3">
-                      {/* A correção da key da v2 (key={store.name}) está mantida aqui */}
+                      {/* Usando key={store.name} para estabilidade */}
                       {product.stores.map((store) => { 
                         const isLowestPrice = store.price === lowestPrice && store.price > 0 && store.inStock;
                         const discount = store.originalPrice && store.originalPrice > store.price && store.inStock
