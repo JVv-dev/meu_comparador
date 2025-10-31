@@ -389,11 +389,10 @@ export function ProductComparison() {
         )}
       </div>
 
-      {/* === BANNER INFERIOR === */}
-     <div className="my-8 text-center">
-       {/* Este é o slot "3194989646" que você mencionou */}
-       <AdBanner dataAdSlot="3194989646" className="h-[100px]" /> 
-     </div>
+    {/* === BANNER INFERIOR === */}
+      <div className="my-8 text-center" translate="no">
+        <AdBanner dataAdSlot="3194989646" className="h-[100px]" /> 
+      </div>
      {/* === FIM DO BANNER === */}
 
       {/* Modal */}
