@@ -18,6 +18,7 @@ import { TrendingDown, ExternalLink, Star, ShoppingCart, SearchIcon, AlertTriang
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Terminal } from "lucide-react"
+import { AdBanner } from '@/components/AdBanner'; // <-- 1. IMPORTAR O BANNER
 
 
 // Interfaces (sem mudança)
@@ -387,6 +388,13 @@ export function ProductComparison() {
           </Alert>
         )}
       </div>
+
+      {/* === BANNER INFERIOR === */}
+     <div className="my-8 text-center">
+       {/* Este é o slot "3194989646" que você mencionou */}
+       <AdBanner dataAdSlot="3194989646" className="h-[100px]" /> 
+     </div>
+     {/* === FIM DO BANNER === */}
 
       {/* Modal */}
       {selectedProduct && (
