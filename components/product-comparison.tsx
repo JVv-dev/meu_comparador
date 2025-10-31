@@ -1,7 +1,8 @@
 // Conteúdo para price-comparison/components/product-comparison.tsx
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+// AGORA USAMOS useState, useEffect (NÃO MAIS useMemo)
+import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input" 
 import {
   Select,
@@ -19,7 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Terminal } from "lucide-react"
 
-// Interfaces
+// Interfaces (sem mudança)
 interface Store {
   name: string
   price: number
@@ -46,7 +47,7 @@ interface Product {
   priceHistory: PriceHistoryEntry[]
 }
 
-// Função Auxiliar para Ordenação
+// Função Auxiliar para Ordenação (sem mudança)
 const getLowestPrice = (product: Product): number => {
     const validPrices = product.stores
         .filter(s => s.price > 0 && s.inStock)
@@ -56,13 +57,16 @@ const getLowestPrice = (product: Product): number => {
 
 
 export function ProductComparison() {
-  const [masterProducts, setMasterProducts] = useState<Product[]>([]); 
+  // === LÓGICA DE STATE ATUALIZADA ===
+  const [masterProducts, setMasterProducts] = useState<Product[]>([]); // Lista mestra da API
+  const [displayedProducts, setDisplayedProducts] = useState<Product[]>([]); // Lista para exibir na tela
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortOption, setSortOption] = useState("default"); 
+  const [sortOption, setSortOption] = useState("default");
+  // === FIM DA LÓGICA DE STATE ===
 
-  // useEffect para buscar dados (sem alteração)
+  // useEffect para buscar dados (agora seta AMBOS OS STATES)
   useEffect(() => {
     async function fetchProducts() {
       setIsLoading(true);
@@ -92,7 +96,8 @@ export function ProductComparison() {
             throw new Error("Formato de dados inesperado recebido da API.");
         }
         
-        setMasterProducts(data);
+        setMasterProducts(data); // Seta a lista MESTRA
+        setDisplayedProducts(data); // Seta a lista de EXIBIÇÃO inicial
       } catch (err: any) {
         console.error("Erro detalhado no fetch:", err);
         setError(`Não foi possível carregar os produtos. Detalhe: ${err.message}`);
@@ -101,44 +106,43 @@ export function ProductComparison() {
       }
     }
     fetchProducts();
-  }, []);
+  }, []); 
 
   
-  // --- LÓGICA DE FILTRO E ORDENAÇÃO (CORREÇÃO v5 - A PROVA DE BALAS) ---
-  const filteredProducts = useMemo(() => {
-    // 1. Aplica Filtro (Barra de Pesquisa)
-    // Isso cria um NOVO array 'filtered'
-    const filtered = masterProducts.filter(product =>
-      product.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+  // --- LÓGICA DE FILTRO E ORDENAÇÃO (AGORA COM useEffect) ---
+  // Este hook roda toda vez que a lista mestra, a busca ou a ordenação mudam
+  useEffect(() => {
+    let products = [...masterProducts]; // Começa com a cópia da lista mestra
 
-    // 2. Aplica Ordenação
-    if (sortOption === 'default') {
-      return filtered; // Retorna a lista apenas filtrada
+    // 1. Aplica Filtro (Barra de Pesquisa)
+    if (searchTerm) {
+      products = products.filter(product =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
 
-    // Se a ordenação não for 'default', criamos um NOVO array ordenado
-    // Usando .slice(0) para clonar, e .sort() para ordenar a cópia.
-    const sorted = filtered.slice(0).sort((a, b) => {
-      const priceA = getLowestPrice(a);
-      const priceB = getLowestPrice(b);
-      
-      if (sortOption === 'price-asc') {
-        return priceA - priceB;
-      } else {
-        return priceB - priceA;
-      }
-    });
-
-    return sorted; // Retorna a lista filtrada E ordenada
+    // 2. Aplica Ordenação
+    if (sortOption !== 'default') {
+      // Usamos .sort() em uma cópia.
+      products.sort((a, b) => {
+        const priceA = getLowestPrice(a);
+        const priceB = getLowestPrice(b);
+        return sortOption === 'price-asc' ? priceA - priceB : priceB - priceA;
+      });
+    }
+    
+    // 3. Seta o state final de exibição
+    setDisplayedProducts(products);
     
   }, [masterProducts, searchTerm, sortOption]); // Dependências
   // --- FIM DA CORREÇÃO ---
 
 
-  // Estados e handlers do Modal (sem mudanças)
+  // Estados para o modal (mantidos)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+
+  // Funções de clique (mantidas)
   const handleImageClick = (product: Product) => {
     setSelectedProduct(product)
     setIsModalOpen(true)
@@ -151,6 +155,7 @@ export function ProductComparison() {
 
   // 1. Estado de Carregamento
   if (isLoading) {
+    // ... (código do skeleton, sem mudanças)
     return (
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <header className="mb-12 text-center">
@@ -181,7 +186,7 @@ export function ProductComparison() {
      );
   }
 
-  // 3. Estado Sem Produtos (Após Carregamento)
+  // 3. Estado Sem Produtos (Agora checa masterProducts)
    if (masterProducts.length === 0 && !isLoading) {
       return (
         <div className="container mx-auto px-4 py-8 max-w-7xl text-center">
@@ -244,9 +249,10 @@ export function ProductComparison() {
 
 
       {/* --- LISTA DE PRODUTOS ATUALIZADA --- */}
+      {/* AGORA MAPEIA O NOVO STATE: displayedProducts */}
       <div className="space-y-8">
-        {filteredProducts.length > 0 ? (
-          filteredProducts.map((product) => {
+        {displayedProducts.length > 0 ? (
+          displayedProducts.map((product) => { // <-- MUDANÇA AQUI
             const lowestPrice = getLowestPrice(product);
             const highestDiscount = Math.max(
               0,
