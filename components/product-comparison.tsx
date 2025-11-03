@@ -359,7 +359,7 @@ export function ProductComparison() {
                                  {isBestHistorical && (
                                    <Badge variant="outline" className="text-xs flex-shrink-0 border-green-500 text-green-600">
                                      <Trophy className="w-3 h-3 mr-1" />
-                                     Menor Preço Histórico!
+                                     Menor Preço Em Nosso Histórico!
                                    </Badge>
                                  )}
                                  {isBelowAverage && (
