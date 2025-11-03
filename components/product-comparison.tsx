@@ -18,7 +18,7 @@ import { TrendingDown, ExternalLink, Star, ShoppingCart, SearchIcon, AlertTriang
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Terminal } from "lucide-react"
-import { AdBanner } from '@/components/AdBanner'; // <-- 1. IMPORTAR O BANNER
+import { AdBanner } from '@/components/AdBanner'; // Importar o Banner
 
 // Interfaces (sem mudança)
 interface Store {
@@ -57,16 +57,16 @@ const getLowestPrice = (product: Product): number => {
 
 
 export function ProductComparison() {
- // === LÓGICA DE STATE ATUALIZADA ===
- const [masterProducts, setMasterProducts] = useState<Product[]>([]); // Lista mestra da API
- const [displayedProducts, setDisplayedProducts] = useState<Product[]>([]); // Lista para exibir na tela
+ const [masterProducts, setMasterProducts] = useState<Product[]>([]); 
  const [isLoading, setIsLoading] = useState(true);
  const [error, setError] = useState<string | null>(null);
+ 
+ // --- FILTROS ---
  const [searchTerm, setSearchTerm] = useState("");
  const [sortOption, setSortOption] = useState("default");
- // === FIM DA LÓGICA DE STATE ===
+ const [selectedCategory, setSelectedCategory] = useState("all"); // <-- NOVO STATE
 
- // useEffect para buscar dados (agora seta AMBOS OS STATES)
+ // useEffect para buscar dados (sem alteração)
  useEffect(() => {
    async function fetchProducts() {
      setIsLoading(true);
@@ -97,7 +97,6 @@ export function ProductComparison() {
        }
        
        setMasterProducts(data); // Seta a lista MESTRA
-       setDisplayedProducts(data); // Seta a lista de EXIBIÇÃO inicial
      } catch (err: any) {
        console.error("Erro detalhado no fetch:", err);
        setError(`Não foi possível carregar os produtos. Detalhe: ${err.message}`);
@@ -109,16 +108,39 @@ export function ProductComparison() {
  }, []); 
 
  
- // --- LÓGICA DE FILTRO E ORDENAÇÃO (REFEITA COM useMemo v7) ---
- const filteredAndSortedProducts = useMemo(() => {
-   // 1. Aplica Filtro (Barra de Pesquisa)
-   let processedProducts = masterProducts.filter(product =>
-     product.name.toLowerCase().includes(searchTerm.toLowerCase())
-   );
+ // --- NOVO: Lógica para pegar categorias únicas ---
+ const categories = useMemo(() => {
+    // Extrai todas as categorias da lista mestra
+    const allCategories = masterProducts.map(p => p.category);
+    // Filtra para ter apenas categorias únicas e remove nulos/vazios
+    const uniqueCategories = [...new Set(allCategories.filter(Boolean))];
+    // Adiciona "Todas as Categorias" no começo
+    return ["all", ...uniqueCategories.sort()]; // Ordena alfabeticamente
+ }, [masterProducts]);
 
-   // 2. Aplica Ordenação
+
+ // --- LÓGICA DE FILTRO E ORDENAÇÃO (ATUALIZADA) ---
+ const filteredAndSortedProducts = useMemo(() => {
+   
+   // 1. Começa com a lista mestra
+   let processedProducts = [...masterProducts];
+
+   // 2. Aplica Filtro de Categoria (NOVO)
+   if (selectedCategory !== "all") {
+       processedProducts = processedProducts.filter(product =>
+           product.category === selectedCategory
+       );
+   }
+
+   // 3. Aplica Filtro de Pesquisa (Antigo)
+   if (searchTerm) {
+     processedProducts = processedProducts.filter(product =>
+       product.name.toLowerCase().includes(searchTerm.toLowerCase())
+     );
+   }
+
+   // 4. Aplica Ordenação (Antigo)
    if (sortOption !== 'default') {
-     // Cria uma CÓPIA para ordenar, para não mutar o state
      processedProducts = [...processedProducts].sort((a, b) => {
        const priceA = getLowestPrice(a);
        const priceB = getLowestPrice(b);
@@ -128,15 +150,13 @@ export function ProductComparison() {
    
    return processedProducts;
    
- }, [masterProducts, searchTerm, sortOption]); // Dependências
- // --- FIM DA CORREÇÃO ---
+ }, [masterProducts, searchTerm, sortOption, selectedCategory]); // <-- ADICIONADO selectedCategory
+ // --- FIM DA LÓGICA ---
 
 
- // Estados para o modal (mantidos)
+ // Estados e handlers do Modal (sem mudanças)
  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
  const [isModalOpen, setIsModalOpen] = useState(false)
-
- // Funções de clique (mantidas)
  const handleImageClick = (product: Product) => {
    setSelectedProduct(product)
    setIsModalOpen(true)
@@ -149,6 +169,7 @@ export function ProductComparison() {
 
  // 1. Estado de Carregamento
  if (isLoading) {
+   // ... (código do skeleton, sem mudanças)
    return (
      <div className="container mx-auto px-4 py-8 max-w-7xl">
        <header className="mb-12 text-center">
@@ -193,8 +214,7 @@ export function ProductComparison() {
                <AlertTriangle className="h-4 w-4" />
                <AlertTitle>Nenhum produto encontrado</AlertTitle>
                <AlertDescription>
-                   O arquivo <code className="bg-muted px-1 rounded">precos.csv</code> está vazio ou não foi encontrado.
-                   Execute o script <code className="bg-muted px-1 rounded">scraper.py</code> no seu computador e faça o push para o GitHub.
+                   Execute o script <code className="bg-muted px-1 rounded">scraper.py</code> no seu computador para popular o banco de dados.
                </AlertDescription>
            </Alert>
        </div>
@@ -214,16 +234,12 @@ export function ProductComparison() {
      
      {/* === BANNER SUPERIOR (EXEMPLO) === */}
      <div className="my-6 text-center" translate="no"> 
-       {/* IMPORTANTE: 
-         Crie outro bloco de anúncio no AdSense para este slot 
-         e substitua '0000000000' pelo novo ID. 
-       */}
        <AdBanner dataAdSlot="0000000000" className="h-[100px]" /> 
      </div>
-     {/* === FIM DO BANNER === */}
      
-     {/* --- SEÇÃO DE FILTROS --- */}
+     {/* --- SEÇÃO DE FILTROS (ATUALIZADA) --- */}
      <div className="flex flex-col md:flex-row gap-4 mb-8 sticky top-4 z-10 bg-background/90 backdrop-blur-sm p-2 rounded-lg">
+       
        {/* Barra de Pesquisa */}
        <div className="relative flex-1">
          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -236,7 +252,22 @@ export function ProductComparison() {
          />
        </div>
 
-       {/* Dropdown de Ordenação (corrigido para onValueChange) */}
+       {/* === NOVO: Dropdown de Categoria === */}
+       <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+         <SelectTrigger className="w-full md:w-[200px]">
+           <SelectValue placeholder="Categoria" />
+         </SelectTrigger>
+         <SelectContent>
+           {categories.map(category => (
+             <SelectItem key={category} value={category}>
+               {category === "all" ? "Todas as Categorias" : category}
+             </SelectItem>
+           ))}
+         </SelectContent>
+       </Select>
+       {/* === FIM DO NOVO DROPDOWN === */}
+
+       {/* Dropdown de Ordenação */}
        <Select value={sortOption} onValueChange={setSortOption}>
          <SelectTrigger className="w-full md:w-[200px]">
            <SelectValue placeholder="Ordenar por" />
@@ -392,7 +423,7 @@ export function ProductComparison() {
              <AlertTriangle className="h-4 w-4" />
              <AlertTitle>Nenhum resultado encontrado</AlertTitle>
              <AlertDescription>
-                 Nenhum produto corresponde à sua busca. Tente alterar o termo de pesquisa.
+                 Nenhum produto corresponde à sua busca. Tente alterar os filtros.
              </AlertDescription>
          </Alert>
        )}
@@ -400,7 +431,6 @@ export function ProductComparison() {
 
      {/* === BANNER INFERIOR === */}
      <div className="my-8 text-center" translate="no"> 
-       {/* Este é o slot "3194989646" que você pegou do AdSense */}
        <AdBanner dataAdSlot="3194989646" className="h-[100px]" /> 
      </div>
      {/* === FIM DO BANNER === */}
