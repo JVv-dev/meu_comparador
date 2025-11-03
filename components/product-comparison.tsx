@@ -14,13 +14,14 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { PriceHistoryModal } from "@/components/price-history-modal"
-import { TrendingDown, ExternalLink, Star, ShoppingCart, SearchIcon, AlertTriangle } from "lucide-react"
+// --- MUDANÇA: Novos ícones ---
+import { TrendingDown, ExternalLink, Star, ShoppingCart, SearchIcon, AlertTriangle, Trophy, Flame } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Terminal } from "lucide-react"
-import { AdBanner } from '@/components/AdBanner'; // Importar o Banner
+import { AdBanner } from '@/components/AdBanner'; 
 
-// Interfaces (sem mudança)
+// Interfaces
 interface Store {
  name: string
  price: number
@@ -38,6 +39,7 @@ interface PriceHistoryEntry {
  loja: string
 }
 
+// --- MUDANÇA: Interface atualizada ---
 interface Product {
  id: string
  name: string
@@ -45,6 +47,8 @@ interface Product {
  category: string
  stores: Store[]
  priceHistory: PriceHistoryEntry[]
+ precoMinimoHistorico?: number // <-- ADICIONADO
+ precoMedioHistorico?: number  // <-- ADICIONADO
 }
 
 // Função Auxiliar para Ordenação (sem mudança)
@@ -61,10 +65,10 @@ export function ProductComparison() {
  const [isLoading, setIsLoading] = useState(true);
  const [error, setError] = useState<string | null>(null);
  
- // --- FILTROS ---
+ // Filtros
  const [searchTerm, setSearchTerm] = useState("");
  const [sortOption, setSortOption] = useState("default");
- const [selectedCategory, setSelectedCategory] = useState("all"); // <-- NOVO STATE
+ const [selectedCategory, setSelectedCategory] = useState("all");
 
  // useEffect para buscar dados (sem alteração)
  useEffect(() => {
@@ -96,7 +100,7 @@ export function ProductComparison() {
            throw new Error("Formato de dados inesperado recebido da API.");
        }
        
-       setMasterProducts(data); // Seta a lista MESTRA
+       setMasterProducts(data);
      } catch (err: any) {
        console.error("Erro detalhado no fetch:", err);
        setError(`Não foi possível carregar os produtos. Detalhe: ${err.message}`);
@@ -108,38 +112,30 @@ export function ProductComparison() {
  }, []); 
 
  
- // --- NOVO: Lógica para pegar categorias únicas ---
+ // Lógica para pegar categorias únicas (sem alteração)
  const categories = useMemo(() => {
-    // Extrai todas as categorias da lista mestra
     const allCategories = masterProducts.map(p => p.category);
-    // Filtra para ter apenas categorias únicas e remove nulos/vazios
     const uniqueCategories = [...new Set(allCategories.filter(Boolean))];
-    // Adiciona "Todas as Categorias" no começo
-    return ["all", ...uniqueCategories.sort()]; // Ordena alfabeticamente
+    return ["all", ...uniqueCategories.sort()];
  }, [masterProducts]);
 
 
- // --- LÓGICA DE FILTRO E ORDENAÇÃO (ATUALIZADA) ---
+ // LÓGICA DE FILTRO E ORDENAÇÃO (sem alteração)
  const filteredAndSortedProducts = useMemo(() => {
-   
-   // 1. Começa com a lista mestra
    let processedProducts = [...masterProducts];
 
-   // 2. Aplica Filtro de Categoria (NOVO)
    if (selectedCategory !== "all") {
        processedProducts = processedProducts.filter(product =>
            product.category === selectedCategory
        );
    }
 
-   // 3. Aplica Filtro de Pesquisa (Antigo)
    if (searchTerm) {
      processedProducts = processedProducts.filter(product =>
        product.name.toLowerCase().includes(searchTerm.toLowerCase())
      );
    }
 
-   // 4. Aplica Ordenação (Antigo)
    if (sortOption !== 'default') {
      processedProducts = [...processedProducts].sort((a, b) => {
        const priceA = getLowestPrice(a);
@@ -150,8 +146,7 @@ export function ProductComparison() {
    
    return processedProducts;
    
- }, [masterProducts, searchTerm, sortOption, selectedCategory]); // <-- ADICIONADO selectedCategory
- // --- FIM DA LÓGICA ---
+ }, [masterProducts, searchTerm, sortOption, selectedCategory]);
 
 
  // Estados e handlers do Modal (sem mudanças)
@@ -214,7 +209,7 @@ export function ProductComparison() {
                <AlertTriangle className="h-4 w-4" />
                <AlertTitle>Nenhum produto encontrado</AlertTitle>
                <AlertDescription>
-                   Execute o script <code className="bg-muted px-1 rounded">scraper.py</code> no seu computador para popular o banco de dados.
+                   O banco de dados está vazio. Execute o script <code className="bg-muted px-1 rounded">scraper.py</code> no seu computador.
                </AlertDescription>
            </Alert>
        </div>
@@ -232,15 +227,13 @@ export function ProductComparison() {
        </p>
      </header>
      
-     {/* === BANNER SUPERIOR (EXEMPLO) === */}
+     {/* BANNER SUPERIOR (EXEMPLO) */}
      <div className="my-6 text-center" translate="no"> 
        <AdBanner dataAdSlot="0000000000" className="h-[100px]" /> 
      </div>
      
-     {/* --- SEÇÃO DE FILTROS (ATUALIZADA) --- */}
+     {/* SEÇÃO DE FILTROS (sem mudança) */}
      <div className="flex flex-col md:flex-row gap-4 mb-8 sticky top-4 z-10 bg-background/90 backdrop-blur-sm p-2 rounded-lg">
-       
-       {/* Barra de Pesquisa */}
        <div className="relative flex-1">
          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
          <Input
@@ -251,8 +244,6 @@ export function ProductComparison() {
            onChange={(e) => setSearchTerm(e.target.value)}
          />
        </div>
-
-       {/* === NOVO: Dropdown de Categoria === */}
        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
          <SelectTrigger className="w-full md:w-[200px]">
            <SelectValue placeholder="Categoria" />
@@ -265,9 +256,6 @@ export function ProductComparison() {
            ))}
          </SelectContent>
        </Select>
-       {/* === FIM DO NOVO DROPDOWN === */}
-
-       {/* Dropdown de Ordenação */}
        <Select value={sortOption} onValueChange={setSortOption}>
          <SelectTrigger className="w-full md:w-[200px]">
            <SelectValue placeholder="Ordenar por" />
@@ -283,10 +271,9 @@ export function ProductComparison() {
 
 
      {/* --- LISTA DE PRODUTOS ATUALIZADA --- */}
-     {/* AGORA MAPEIA O 'filteredAndSortedProducts' do useMemo */}
      <div className="space-y-8">
        {filteredAndSortedProducts.length > 0 ? (
-         filteredAndSortedProducts.map((product) => { // <-- MUDANÇA AQUI
+         filteredAndSortedProducts.map((product) => {
            const lowestPrice = getLowestPrice(product);
            const highestDiscount = Math.max(
              0,
@@ -303,7 +290,7 @@ export function ProductComparison() {
            return (
              <Card key={product.id} className="overflow-hidden">
                <div className="grid md:grid-cols-[300px_1fr] gap-6 p-6">
-                 {/* Product Image Section */}
+                 {/* Product Image Section (sem mudança) */}
                  <div className="space-y-3">
                    <button onClick={() => handleImageClick(product)} className="relative group cursor-pointer w-full">
                      <div className="aspect-square rounded-lg overflow-hidden bg-muted flex items-center justify-center">
@@ -339,12 +326,16 @@ export function ProductComparison() {
 
                    {/* Stores Comparison */}
                    <div className="space-y-3">
-                     {/* Usando key={store.name} para estabilidade */}
                      {product.stores.map((store) => { 
                        const isLowestPrice = store.price === lowestPrice && store.price > 0 && store.inStock;
                        const discount = store.originalPrice && store.originalPrice > store.price && store.inStock
                          ? ((store.originalPrice - store.price) / store.originalPrice) * 100
                          : 0;
+                       
+                       // --- MUDANÇA: LÓGICA DOS BADGES DE PREÇO ---
+                       const isBestHistorical = product.precoMinimoHistorico && store.price > 0 && store.price <= product.precoMinimoHistorico;
+                       const isBelowAverage = product.precoMedioHistorico && store.price > 0 && store.price < product.precoMedioHistorico && !isBestHistorical;
+                       // --- FIM DA MUDANÇA ---
 
                        return (
                          <div
@@ -363,6 +354,22 @@ export function ProductComparison() {
                                      Melhor Preço
                                    </Badge>
                                  )}
+                                 
+                                 {/* --- MUDANÇA: NOVOS BADGES --- */}
+                                 {isBestHistorical && (
+                                   <Badge variant="outline" className="text-xs flex-shrink-0 border-green-500 text-green-600">
+                                     <Trophy className="w-3 h-3 mr-1" />
+                                     Menor Preço Histórico!
+                                   </Badge>
+                                 )}
+                                 {isBelowAverage && (
+                                   <Badge variant="outline" className="text-xs flex-shrink-0 border-orange-500 text-orange-600">
+                                     <Flame className="w-3 h-3 mr-1" />
+                                     Abaixo da Média
+                                   </Badge>
+                                 )}
+                                 {/* --- FIM DA MUDANÇA --- */}
+
                                  {!store.inStock && (
                                    <Badge variant="destructive" className="text-xs flex-shrink-0">
                                      Indisponível
@@ -381,7 +388,7 @@ export function ProductComparison() {
                                <p className="text-sm text-muted-foreground">{store.shipping}</p>
                              </div>
 
-                             {/* Preço e Botão */}
+                             {/* Preço e Botão (sem mudança) */}
                              <div className="flex flex-col items-end gap-1 flex-shrink-0">
                                {store.originalPrice && store.originalPrice > store.price && store.inStock && (
                                  <div className="text-sm text-muted-foreground line-through whitespace-nowrap">
@@ -429,12 +436,10 @@ export function ProductComparison() {
        )}
      </div>
 
-     {/* === BANNER INFERIOR === */}
+     {/* BANNER INFERIOR */}
      <div className="my-8 text-center" translate="no"> 
        <AdBanner dataAdSlot="3194989646" className="h-[100px]" /> 
      </div>
-     {/* === FIM DO BANNER === */}
-
 
      {/* Modal */}
      {selectedProduct && (
