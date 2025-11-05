@@ -38,11 +38,11 @@ interface PriceHistoryModalProps {
  product: Product | null
 }
 
-// Cores fixas para cada loja (você pode adicionar mais)
+// Cores fixas para cada loja 
 const storeColors: { [key: string]: string } = {
  Kabum: "#FF6400", // Laranja
  Pichau: "#35A2EB", // Azul
- Terabyte: "#4BC0C0", // Verde
+ Terabyte: "#4BC0C0", // Ciano
  // Adicione mais cores se novas lojas entrarem
  Default: "#8884d8",
 };

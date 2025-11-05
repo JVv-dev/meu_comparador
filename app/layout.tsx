@@ -34,9 +34,14 @@ export default function RootLayout({
       />
 
       {/* === A MUDANÇA ESTÁ AQUI === */}
-      <body className={`font-sans antialiased notranslate`}> 
-      {/* Adicionamos a classe 'notranslate' */}
-      
+      <body 
+        className={`
+          font-sans antialiased notranslate 
+          min-h-screen 
+          bg-gradient-to-b from-white to-slate-50
+          dark:from-black dark:to-slate-950
+        `}
+      > 
         {children}
         <Analytics />
       </body>
