@@ -1,7 +1,8 @@
-// Conteúdo para price-comparison/components/product-comparison.tsx
+// Conteúdo para price-comparison/components/product-comparison.tsx (vEstável - Bug 's' CORRIGIDO)
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
+import Link from "next/link" // Importado para os links de SEO
 import { Input } from "@/components/ui/input" 
 import {
  Select,
@@ -14,14 +15,12 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { PriceHistoryModal } from "@/components/price-history-modal"
-// --- MUDANÇA: Novos ícones ---
 import { TrendingDown, ExternalLink, Star, ShoppingCart, SearchIcon, AlertTriangle, Trophy, Flame } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Terminal } from "lucide-react"
 import { AdBanner } from '@/components/AdBanner'; 
-// ... (outros imports)
-import { ThemeToggle } from "@/components/theme-toggle"; // <-- 1. IMPORTE AQUI
+import { ThemeToggle } from "@/components/theme-toggle"; 
 
 // Interfaces
 interface Store {
@@ -41,7 +40,6 @@ interface PriceHistoryEntry {
  loja: string
 }
 
-// --- MUDANÇA: Interface atualizada ---
 interface Product {
  id: string
  name: string
@@ -49,11 +47,11 @@ interface Product {
  category: string
  stores: Store[]
  priceHistory: PriceHistoryEntry[]
- precoMinimoHistorico?: number // <-- ADICIONADO
- precoMedioHistorico?: number  // <-- ADICIONADO
+ precoMinimoHistorico?: number 
+ precoMedioHistorico?: number  
 }
 
-// Função Auxiliar para Ordenação (sem mudança)
+// Função Auxiliar para Ordenação
 const getLowestPrice = (product: Product): number => {
     const validPrices = product.stores
         .filter(s => s.price > 0 && s.inStock)
@@ -72,17 +70,15 @@ export function ProductComparison() {
  const [sortOption, setSortOption] = useState("default");
  const [selectedCategory, setSelectedCategory] = useState("all");
 
- // useEffect para buscar dados (sem alteração)
+ // useEffect para buscar dados
  useEffect(() => {
    async function fetchProducts() {
      setIsLoading(true);
      setError(null);
      try {
-       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api-comparador-backend.onrender.com/";
-       console.log(`Buscando produtos de: ${apiUrl}`);
+       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api-comparador-backend.onrender.com/api/products"; 
 
        const response = await fetch(apiUrl);
-       console.log(`Status da resposta: ${response.status}`);
 
        if (!response.ok) {
          let errorBody = 'Erro desconhecido';
@@ -96,8 +92,7 @@ export function ProductComparison() {
        }
 
        const data = await response.json();
-       console.log("Dados recebidos da API:", data);
-
+       
        if (!Array.isArray(data)) {
            throw new Error("Formato de dados inesperado recebido da API.");
        }
@@ -114,7 +109,7 @@ export function ProductComparison() {
  }, []); 
 
  
- // Lógica para pegar categorias únicas (sem alteração)
+ // Lógica para pegar categorias únicas
  const categories = useMemo(() => {
     const allCategories = masterProducts.map(p => p.category);
     const uniqueCategories = [...new Set(allCategories.filter(Boolean))];
@@ -122,7 +117,7 @@ export function ProductComparison() {
  }, [masterProducts]);
 
 
- // LÓGICA DE FILTRO E ORDENAÇÃO (sem alteração)
+ // LÓGICA DE FILTRO E ORDENAÇÃO (Estável)
  const filteredAndSortedProducts = useMemo(() => {
    let processedProducts = [...masterProducts];
 
@@ -151,7 +146,7 @@ export function ProductComparison() {
  }, [masterProducts, searchTerm, sortOption, selectedCategory]);
 
 
- // Estados e handlers do Modal (sem mudanças)
+ // Estados e handlers do Modal
  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
  const [isModalOpen, setIsModalOpen] = useState(false)
  const handleImageClick = (product: Product) => {
@@ -166,7 +161,7 @@ export function ProductComparison() {
 
  // 1. Estado de Carregamento
  if (isLoading) {
-   // ... (código do skeleton, sem mudanças)
+   // ... (código do skeleton)
    return (
      <div className="container mx-auto px-4 py-8 max-w-7xl">
        <header className="mb-12 text-center">
@@ -197,7 +192,7 @@ export function ProductComparison() {
     );
  }
 
- // 3. Estado Sem Produtos (Agora checa masterProducts)
+ // 3. Estado Sem Produtos
   if (masterProducts.length === 0 && !isLoading) {
      return (
        <div className="container mx-auto px-4 py-8 max-w-7xl text-center">
@@ -223,8 +218,8 @@ export function ProductComparison() {
  return (
    <div className="container mx-auto px-4 py-8 max-w-7xl">
      <header className="mb-12 text-center">
-       <h1 className="text-4xl font-bold mb-3 text-balance">Compare Preços e Economize</h1>
-       <p className="text-muted-foreground text-lg text-balance">
+       <h1 className="text-3xl md:text-4xl font-bold mb-3 text-balance">Compare Preços e Economize</h1>
+       <p className="text-base md:text-lg text-muted-foreground text-balance">
          Encontre as melhores ofertas em diversas lojas online
        </p>
      </header>
@@ -234,20 +229,24 @@ export function ProductComparison() {
        <AdBanner dataAdSlot="0000000000" className="h-[100px]" /> 
      </div>
      
-     {/* SEÇÃO DE FILTROS (sem mudança) */}
-     <div className="flex flex-col md:flex-row gap-4 mb-8 sticky top-4 z-10 bg-background/90 backdrop-blur-sm p-2 rounded-lg">
-       <div className="relative flex-1">
+     {/* SEÇÃO DE FILTROS (ATUALIZADA) */}
+     <div className="flex flex-wrap md:flex-nowrap gap-2 md:gap-4 mb-8 sticky top-4 z-10 bg-background/90 backdrop-blur-sm p-2 rounded-lg">
+       
+       {/* Barra de Pesquisa */}
+       <div className="relative flex-1 min-w-[150px]"> 
          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
          <Input
            type="search"
-           placeholder="Pesquisar por nome (ex: RTX 4070)..."
+           placeholder="Pesquisar..." 
            className="pl-10"
            value={searchTerm}
            onChange={(e) => setSearchTerm(e.target.value)}
          />
        </div>
+
+       {/* Dropdown de Categoria */}
        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-         <SelectTrigger className="w-full md:w-[200px]">
+         <SelectTrigger className="w-full grow md:w-[200px] md:grow-0">
            <SelectValue placeholder="Categoria" />
          </SelectTrigger>
          <SelectContent>
@@ -258,8 +257,10 @@ export function ProductComparison() {
            ))}
          </SelectContent>
        </Select>
+
+       {/* Dropdown de Ordenação */}
        <Select value={sortOption} onValueChange={setSortOption}>
-         <SelectTrigger className="w-full md:w-[200px]">
+         <SelectTrigger className="w-full grow md:w-[200px] md:grow-0">
            <SelectValue placeholder="Ordenar por" />
          </SelectTrigger>
          <SelectContent>
@@ -268,13 +269,15 @@ export function ProductComparison() {
            <SelectItem value="price-desc">Maior Preço</SelectItem>
          </SelectContent>
        </Select>
-       {/* --- 2. ADICIONE O BOTÃO DE TEMA AQUI --- */}
+
+       {/* Botão de Tema */}
        <ThemeToggle />
+
      </div>
      {/* --- FIM DA SEÇÃO DE FILTROS --- */}
 
 
-     {/* --- LISTA DE PRODUTOS ATUALIZADA --- */}
+     {/* --- LISTA DE PRODUTOS --- */}
      <div className="space-y-8">
        {filteredAndSortedProducts.length > 0 ? (
          filteredAndSortedProducts.map((product) => {
@@ -293,8 +296,12 @@ export function ProductComparison() {
 
            return (
              <Card key={product.id} className="overflow-hidden">
+               
+               {/* === ESTE É O LAYOUT ORIGINAL (ESTÁVEL) === */}
+               {/* "empilhado" no mobile (padrão) e 2 colunas no desktop (md:) */}
                <div className="grid md:grid-cols-[300px_1fr] gap-6 p-6">
-                 {/* Product Image Section (sem mudança) */}
+               
+                 {/* Product Image Section */}
                  <div className="space-y-3">
                    <button onClick={() => handleImageClick(product)} className="relative group cursor-pointer w-full">
                      <div className="aspect-square rounded-lg overflow-hidden bg-muted flex items-center justify-center">
@@ -320,7 +327,14 @@ export function ProductComparison() {
                  {/* Product Details Section */}
                  <div className="space-y-4">
                    <div>
-                     <h2 className="text-2xl font-bold mb-2 text-balance">{product.name}</h2>
+                     {/* --- O Link para SEO --- */}
+                     <Link 
+                        href={`/produto/${encodeURIComponent(product.id)}`} 
+                        className="hover:underline"
+                     >
+                       <h2 className="text-2xl font-bold mb-2 text-balance">{product.name}</h2>
+                     </Link>
+
                      {highestDiscount > 0 && (
                        <Badge variant="default" className="bg-accent text-accent-foreground">
                          Até {highestDiscount.toFixed(0)}% OFF
@@ -332,14 +346,15 @@ export function ProductComparison() {
                    <div className="space-y-3">
                      {product.stores.map((store) => { 
                        const isLowestPrice = store.price === lowestPrice && store.price > 0 && store.inStock;
+                       
+                       // === ESTA É A LINHA QUE VOCÊ ENCONTROU O BUG (CORRIGIDA) ===
                        const discount = store.originalPrice && store.originalPrice > store.price && store.inStock
                          ? ((store.originalPrice - store.price) / store.originalPrice) * 100
                          : 0;
+                       // ========================================================
                        
-                       // --- MUDANÇA: LÓGICA DOS BADGES DE PREÇO ---
                        const isBestHistorical = product.precoMinimoHistorico && store.price > 0 && store.price <= product.precoMinimoHistorico;
                        const isBelowAverage = product.precoMedioHistorico && store.price > 0 && store.price < product.precoMedioHistorico && !isBestHistorical;
-                       // --- FIM DA MUDANÇA ---
 
                        return (
                          <div
@@ -349,6 +364,7 @@ export function ProductComparison() {
                            }`}
                          >
                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                             
                              {/* Detalhes da Loja */}
                              <div className="flex-1 space-y-2 min-w-0">
                                <div className="flex items-center gap-2 flex-wrap">
@@ -358,28 +374,28 @@ export function ProductComparison() {
                                      Melhor Preço
                                    </Badge>
                                  )}
-                                 
-                                 {/* --- MUDANÇA: NOVOS BADGES --- */}
-                                 {isBestHistorical && (
-                                   <Badge variant="outline" className="text-xs flex-shrink-0 border-green-500 text-green-600">
-                                     <Trophy className="w-3 h-3 mr-1" />
-                                     Menor Preço Em Nosso Histórico!
-                                   </Badge>
-                                 )}
-                                 {isBelowAverage && (
-                                   <Badge variant="outline" className="text-xs flex-shrink-0 border-orange-500 text-orange-600">
-                                     <Flame className="w-3 h-3 mr-1" />
-                                     Abaixo da Média
-                                   </Badge>
-                                 )}
-                                 {/* --- FIM DA MUDANÇA --- */}
-
                                  {!store.inStock && (
                                    <Badge variant="destructive" className="text-xs flex-shrink-0">
                                      Indisponível
                                    </Badge>
                                  )}
                                </div>
+
+                               <div className="flex flex-wrap gap-2">
+                                 {isBestHistorical && (
+                                   <Badge variant="outline" className="text-xs flex-shrink-0 border-green-500 text-green-600">
+                                     <Trophy className="w-3 h-3 mr-1" />
+                                     <span>Menor Preço Registrado!</span>
+                                   </Badge>
+                                 )}
+                                 {isBelowAverage && (
+                                   <Badge variant="outline" className="text-xs flex-shrink-0 border-orange-500 text-orange-600">
+                                     <Flame className="w-3 h-3 mr-1" />
+                                     <span>Abaixo da Média</span>
+                                   </Badge>
+                                 )}
+                               </div>
+                               
                                {store.rating > 0 && (
                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                      <div className="flex items-center gap-1">
@@ -392,7 +408,7 @@ export function ProductComparison() {
                                <p className="text-sm text-muted-foreground">{store.shipping}</p>
                              </div>
 
-                             {/* Preço e Botão (sem mudança) */}
+                             {/* Preço e Botão */}
                              <div className="flex flex-col items-end gap-1 flex-shrink-0">
                                {store.originalPrice && store.originalPrice > store.price && store.inStock && (
                                  <div className="text-sm text-muted-foreground line-through whitespace-nowrap">
@@ -414,7 +430,7 @@ export function ProductComparison() {
                                  size="sm"
                                >
                                  <ShoppingCart className="w-4 h-4 mr-2" />
-                                 Ir para Loja
+                                 <span>Ir à Loja</span>
                                  <ExternalLink className="w-4 h-4 ml-2" />
                                </Button>
                              </div>
