@@ -20,6 +20,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Terminal } from "lucide-react"
 import { AdBanner } from '@/components/AdBanner'; 
+// ... (outros imports)
+import { ThemeToggle } from "@/components/theme-toggle"; // <-- 1. IMPORTE AQUI
 
 // Interfaces
 interface Store {
@@ -266,6 +268,8 @@ export function ProductComparison() {
            <SelectItem value="price-desc">Maior Preço</SelectItem>
          </SelectContent>
        </Select>
+       {/* --- 2. ADICIONE O BOTÃO DE TEMA AQUI --- */}
+       <ThemeToggle />
      </div>
      {/* --- FIM DA SEÇÃO DE FILTROS --- */}
 

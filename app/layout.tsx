@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import Script from 'next/script' 
 import './globals.css'
+// --- 1. Importe o ThemeProvider ---
+import { ThemeProvider } from "@/components/theme-provider" 
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
@@ -11,7 +13,7 @@ export const metadata: Metadata = {
   title: 'GPU price',
   description: 'Encontre as melhores ofertas de placas de vídeo e mais!',
   other: { 
-    "google": "notranslate" // (Isto está correto e deve ser mantido)
+    "google": "notranslate"
   }
 }
 
@@ -21,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="pt-BR" translate="no"> 
+    <html lang="pt-BR" translate="no" suppressHydrationWarning> 
       <head>
         {/* O 'metadata' acima irá gerar a tag <meta> aqui */}
       </head>
@@ -33,17 +35,29 @@ export default function RootLayout({
         strategy="afterInteractive" 
       />
 
-      {/* === A MUDANÇA ESTÁ AQUI === */}
+      {/* --- 2. Adicione um fundo que FUNCIONA --- */}
+      {/* slate-100 (Cinza claro) para Modo Claro
+        slate-950 (Cinza quase-preto) para Modo Escuro
+        Isso VAI ser diferente de branco/preto.
+      */}
       <body 
         className={`
           font-sans antialiased notranslate 
           min-h-screen 
-          bg-gradient-to-b from-slate-50 to-slate-100
-          dark:from-slate-900 dark:to-slate-950
+          bg-slate-100
+          dark:bg-slate-950
         `}
-      >
-        {children}
-        <Analytics />
+      > 
+        {/* --- 3. Ative o Provedor de Tema --- */}
+        <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+        >
+          {children}
+          <Analytics />
+        </ThemeProvider>
       </body>
     </html>
   )
