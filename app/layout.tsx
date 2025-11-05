@@ -38,10 +38,10 @@ export default function RootLayout({
         className={`
           font-sans antialiased notranslate 
           min-h-screen 
-          bg-gradient-to-b from-white to-slate-50
-          dark:from-black dark:to-slate-950
+          bg-gradient-to-b from-slate-50 to-slate-100
+          dark:from-slate-900 dark:to-slate-950
         `}
-      > 
+      >
         {children}
         <Analytics />
       </body>
