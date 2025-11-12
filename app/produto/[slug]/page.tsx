@@ -1,10 +1,11 @@
 // Conteúdo para: meu_comparador_frontend/app/produto/[slug]/page.tsx
+// (v11.2 - Corrigindo 'flex-shrink-0' para 'shrink-0')
 
 "use client" // Esta é uma página do lado do cliente
 
 import { useState, useEffect, useMemo } from "react"
 import { useParams } from 'next/navigation' // Hook para ler a URL
-import Link from "next/link" // <--- A CORREÇÃO ESTÁ AQUI
+import Link from "next/link" 
 import {
  LineChart,
  Line,
@@ -15,13 +16,13 @@ import {
  ResponsiveContainer,
  Legend 
 } from "recharts"
-import { Card } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card" 
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Terminal, TrendingDown, ExternalLink, Star, ShoppingCart, Trophy, Flame, AlertCircle } from "lucide-react"
-import { AdBanner } from '@/components/AdBanner' // <-- Bônus: já importei o banner
+import { AdBanner } from '@/components/AdBanner' 
 
 // ---
 // As interfaces que copiamos do product-comparison.tsx
@@ -49,7 +50,8 @@ interface Product {
  stores: Store[]
  priceHistory: PriceHistoryEntry[]
  precoMinimoHistorico?: number 
- precoMedioHistorico?: number  
+ precoMedioHistorico?: number 
+ descricao: string; // <-- MUDANÇA 1: ADICIONADO
 }
 // --- Fim das Interfaces ---
 
@@ -181,15 +183,15 @@ export default function ProdutoPage() {
     return (
       <div className="container mx-auto px-4 py-8 max-w-3xl">
            <Alert variant="destructive">
-              <Terminal className="h-4 w-4" />
-              <AlertTitle>Erro 404 - Produto Não Encontrado</AlertTitle>
-              <AlertDescription>
-                  Não encontramos o produto que você está procurando.
-                  <br/>
-                  {/* O Link que estava faltando */}
-                  <Link href="/" className="underline mt-2">Voltar para a página inicial</Link>
-              </AlertDescription>
-          </Alert>
+             <Terminal className="h-4 w-4" />
+             <AlertTitle>Erro 404 - Produto Não Encontrado</AlertTitle>
+             <AlertDescription>
+                 Não encontramos o produto que você está procurando.
+                 <br/>
+                 {/* O Link que estava faltando */}
+                 <Link href="/" className="underline mt-2">Voltar para a página inicial</Link>
+             </AlertDescription>
+           </Alert>
       </div>
     );
   }
@@ -245,32 +247,32 @@ export default function ProdutoPage() {
                       <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="font-semibold text-lg truncate">{store.name}</h3>
                         {isLowestPrice && (
-                          <Badge variant="default" className="text-xs flex-shrink-0">
-                            Melhor Preço
+                          <Badge variant="default" className="text-xs shrink-0"> {/* <-- CORRIGIDO */}
+                             Melhor Preço
                           </Badge>
                         )}
                         {isBestHistorical && (
-                          <Badge variant="outline" className="text-xs flex-shrink-0 border-green-500 text-green-600">
+                          <Badge variant="outline" className="text-xs shrink-0 border-green-500 text-green-600"> {/* <-- CORRIGIDO */}
                             <Trophy className="w-3 h-3 mr-1" />
                             <span>Menor Preço Registrado!</span>
                           </Badge>
                         )}
                         {isBelowAverage && (
-                          <Badge variant="outline" className="text-xs flex-shrink-0 border-orange-500 text-orange-600">
+                          <Badge variant="outline" className="text-xs shrink-0 border-orange-500 text-orange-600"> {/* <-- CORRIGIDO */}
                             <Flame className="w-3 h-3 mr-1" />
                             <span>Abaixo da Média</span>
                           </Badge>
                         )}
                         {!store.inStock && (
-                          <Badge variant="destructive" className="text-xs flex-shrink-0">
-                            Indisponível
+                          <Badge variant="destructive" className="text-xs shrink-0"> {/* <-- CORRIGIDO */}
+                             Indisponível
                           </Badge>
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground">{store.shipping}</p>
                     </div>
                     
-                    <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                    <div className="flex flex-col items-end gap-1 shrink-0"> {/* <-- CORRIGIDO */}
                       <div className={`text-2xl sm:text-3xl font-bold whitespace-nowrap ${store.inStock && store.price > 0 ? 'text-primary' : 'text-muted-foreground text-xl'}`}>
                         {store.inStock && store.price > 0 ? `R$ ${store.price.toFixed(2).replace(".", ",")}` : "Indisponível"}
                       </div>
@@ -292,6 +294,26 @@ export default function ProdutoPage() {
           </div>
         </div>
       </div>
+
+      {/* --- MUDANÇA 2: CARD DE DESCRIÇÃO ADICIONADO AQUI --- */}
+      {product.descricao && (
+        <Card className="mt-8">
+          <CardHeader>
+            <CardTitle>Descrição do Produto</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {/* 'prose' vem do plugin @tailwindcss/typography
+              'dangerouslySetInnerHTML' é o comando do React para
+              renderizar uma string que contém HTML.
+            */}
+            <div
+              className="prose prose-sm dark:prose-invert max-w-none"
+              dangerouslySetInnerHTML={{ __html: product.descricao }}
+            />
+          </CardContent>
+        </Card>
+      )}
+      {/* --- FIM DA MUDANÇA 2 --- */}
       
       {/* Banner de Anúncio (copiado do product-comparison) */}
       <div className="my-8 text-center" translate="no"> 
@@ -326,19 +348,19 @@ export default function ProdutoPage() {
                 <Legend verticalAlign="top" wrapperStyle={{ paddingBottom: '15px' }} />
                 
                 {uniqueLojas.map(loja => {
-                   const color = storeColors[loja] || storeColors.Default;
-                   return (
-                       <Line
-                           key={loja}
-                           type="monotone"
-                           dataKey={loja}
-                           stroke={color}
-                           strokeWidth={2}
-                           dot={{ r: 3, fill: color }}
-                           activeDot={{ r: 5 }}
-                           connectNulls 
-                       />
-                   );
+                    const color = storeColors[loja] || storeColors.Default;
+                    return (
+                        <Line
+                            key={loja}
+                            type="monotone"
+                            dataKey={loja}
+                            stroke={color}
+                            strokeWidth={2}
+                            dot={{ r: 3, fill: color }}
+                            activeDot={{ r: 5 }}
+                            connectNulls 
+                        />
+                    );
                 })}
               </LineChart>
             </ResponsiveContainer>
