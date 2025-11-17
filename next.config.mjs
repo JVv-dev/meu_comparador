@@ -1,5 +1,5 @@
 // Conteúdo para: meu_comparador_frontend/next.config.mjs
-// (v11.4 - CORREÇÃO: Adicionando domínios de imagem principal)
+// (v11.5 - CORREÇÃO DO ERRO DE SINTAXE '->//')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -8,8 +8,8 @@ const nextConfig = {
       { protocol: 'https', hostname: 'img.terabyteshop.com.br' },
       { protocol: 'https', hostname: 'hotsite.pichau.com.br' },
       { protocol: 'https', hostname: 'hotsite.kabum.com.br' },
-      { protocol: 'https', hostname: 'img.kabum.com.br' }, // <-- FALTAVA ESTE
-      { protocol: 'https', hostname: 'img.pichau.com.br' },  // <-- FALTAVA ESTE
+      { protocol: 'https', hostname: 'img.kabum.com.br' }, 
+      { protocol: 'https', hostname: 'img.pichau.com.br' },
     ],
   },
 
@@ -28,9 +28,9 @@ const nextConfig = {
       "https://hotsite.pichau.com.br", 
       "https://hotsite.kabum.com.br", 
       
-      // DOMÍNIOS PRINCIPAIS (OS QUE FALTAVAM)
-      "https->//img.kabum.com.br",
-      "https->//img.pichau.com.br",
+      // DOMÍNIOS PRINCIPAIS (CORRIGIDOS)
+      "https://img.kabum.com.br",
+      "https://img.pichau.com.br",
 
       // AdSense
       "https://googleads.g.doubleclick.net", 
