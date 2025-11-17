@@ -1,5 +1,5 @@
 // Conteúdo para: meu_comparador_frontend/app/produto/[slug]/page.tsx
-// (v11.2 - Corrigindo 'flex-shrink-0' para 'shrink-0')
+// (v11.2 - Com Card de Descrição + Correção shrink-0)
 
 "use client" // Esta é uma página do lado do cliente
 
@@ -51,7 +51,7 @@ interface Product {
  priceHistory: PriceHistoryEntry[]
  precoMinimoHistorico?: number 
  precoMedioHistorico?: number 
- descricao: string; // <-- MUDANÇA 1: ADICIONADO
+ descricao: string; // <-- ADICIONADO AQUI
 }
 // --- Fim das Interfaces ---
 
@@ -295,7 +295,7 @@ export default function ProdutoPage() {
         </div>
       </div>
 
-      {/* --- MUDANÇA 2: CARD DE DESCRIÇÃO ADICIONADO AQUI --- */}
+      {/* --- CARD DE DESCRIÇÃO ADICIONADO AQUI --- */}
       {product.descricao && (
         <Card className="mt-8">
           <CardHeader>
@@ -313,7 +313,7 @@ export default function ProdutoPage() {
           </CardContent>
         </Card>
       )}
-      {/* --- FIM DA MUDANÇA 2 --- */}
+      {/* --- FIM DA DESCRIÇÃO --- */}
       
       {/* Banner de Anúncio (copiado do product-comparison) */}
       <div className="my-8 text-center" translate="no"> 
