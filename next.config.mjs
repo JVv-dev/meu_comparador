@@ -29,8 +29,8 @@ const nextConfig = {
       "https://hotsite.kabum.com.br", 
       
       // DOMÍNIOS PRINCIPAIS (CORRIGIDOS)
-      "https://img.kabum.com.br",
-      "https://img.pichau.com.br",
+      "https://img.kabum.com.br", // <-- CORRIGIDO
+      "https://img.pichau.com.br", // <-- CORRIGIDO
 
       // AdSense
       "https://googleads.g.doubleclick.net", 
