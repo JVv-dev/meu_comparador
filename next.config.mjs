@@ -1,41 +1,47 @@
 // Conteúdo para: meu_comparador_frontend/next.config.mjs
-// (v11.3 - Autorizando Imagens com CSP)
+// (v11.4 - CORREÇÃO: Adicionando domínios de imagem principal)
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // O 'images.remotePatterns' não funciona para <img>,
-  // mas vamos manter caso você use o <Image> do Next no futuro.
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'img.terabyteshop.com.br' },
       { protocol: 'https', hostname: 'hotsite.pichau.com.br' },
       { protocol: 'https', hostname: 'hotsite.kabum.com.br' },
+      { protocol: 'https', hostname: 'img.kabum.com.br' }, // <-- FALTAVA ESTE
+      { protocol: 'https', hostname: 'img.pichau.com.br' },  // <-- FALTAVA ESTE
     ],
   },
 
-  // --- INÍCIO DA CORREÇÃO (CSP HEADER) ---
-  // Isso diz ao navegador para PERMITIR imagens e estilos
-  // de outros domínios, mesmo dentro do dangerouslySetInnerHTML.
+  // --- CABEÇALHO CSP CORRIGIDO ---
   async headers() {
     
     // Lista de domínios permitidos para imagens
     const imageSources = [
       "'self'",
       "data:",
-      "https://*.vercel-insights.com", // Vercel Analytics
-      "https://*.vercel.live", // Vercel
-      "https://img.terabyteshop.com.br", // Terabyte
-      "https://hotsite.pichau.com.br", // Pichau
-      "https://hotsite.kabum.com.br", // Kabum
-      "https://googleads.g.doubleclick.net", // AdSense
-      "https://pagead2.googlesyndication.com", // AdSense
+      "https://*.vercel-insights.com", 
+      "https://*.vercel.live", 
+      
+      // Domínios da Descrição
+      "https://img.terabyteshop.com.br", 
+      "https://hotsite.pichau.com.br", 
+      "https://hotsite.kabum.com.br", 
+      
+      // DOMÍNIOS PRINCIPAIS (OS QUE FALTAVAM)
+      "https->//img.kabum.com.br",
+      "https->//img.pichau.com.br",
+
+      // AdSense
+      "https://googleads.g.doubleclick.net", 
+      "https://pagead2.googlesyndication.com", 
     ];
     
     // Lista de domínios permitidos para scripts
     const scriptSources = [
       "'self'",
       "'unsafe-eval'",
-      "'unsafe-inline'", // Necessário para AdSense e outros
+      "'unsafe-inline'", 
       "https://www.googletagmanager.com",
       "https://pagead2.googlesyndication.com",
       "https://vercel.live",
@@ -44,7 +50,7 @@ const nextConfig = {
     // Lista de domínios permitidos para estilos
     const styleSources = [
       "'self'",
-      "'unsafe-inline'", // Pichau precisa disso para carregar imagens via <style>
+      "'unsafe-inline'", // Pichau precisa disso
       "https://fonts.googleapis.com",
     ];
 
@@ -54,8 +60,8 @@ const nextConfig = {
       "https://api-comparador-backend.onrender.com", // Sua API
       "https://vitals.vercel-insights.com", // Vercel
       "https://vercel.live",
-      "https://googleads.g.doubleclick.net", // AdSense
-      "https://pagead2.googlesyndication.com", // AdSense
+      "https://googleads.g.doubleclick.net", 
+      "https://pagead2.googlesyndication.com", 
     ];
 
     const cspHeader = [
