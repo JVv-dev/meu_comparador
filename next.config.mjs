@@ -1,6 +1,3 @@
-// Conteúdo para: meu_comparador_frontend/next.config.mjs
-// (v11.1 - Autorizando Imagens Externas)
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // --- INÍCIO DA MUDANÇA (AUTORIZAR IMAGENS) ---
@@ -18,7 +15,12 @@ const nextConfig = {
         port: '',
         pathname: '/descricao/**',
       },
-      // Adicione aqui se a Kabum também tiver imagens na descrição
+      {
+        protocol: 'https',
+        hostname: 'hotsite.kabum.com.br',
+        port: '',
+        pathname: '/descricao/**',
+      },
     ],
   },
   // --- FIM DA MUDANÇA ---
