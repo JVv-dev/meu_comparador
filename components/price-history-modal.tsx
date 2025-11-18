@@ -2,7 +2,7 @@
 
 // --- Imports (Adicionado useState, useEffect, Checkbox, Label) ---
 import { useMemo, useState, useEffect } from "react" 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import {
  LineChart,
  Line,
@@ -174,6 +174,7 @@ export function PriceHistoryModal({ isOpen, onClose, product }: PriceHistoryModa
      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-6">
        <DialogHeader className="mb-4">
          <DialogTitle className="text-xl sm:text-2xl text-balance">{product.name}</DialogTitle>
+         <DialogDescription className="sr-only">Histórico de preços para {product.name}</DialogDescription>
        </DialogHeader>
 
        <div className="space-y-6">

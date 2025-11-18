@@ -1,5 +1,5 @@
 // Conteúdo para: meu_comparador_frontend/next.config.mjs
-// (v11.10 - Correção CSP Final com Wildcards)
+// (v11.11 - CORREÇÃO FINAL de sintaxe do CSP)
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -10,48 +10,58 @@ const nextConfig = {
       { protocol: 'https', hostname: 'hotsite.kabum.com.br' },
       { protocol: 'https', hostname: 'img.kabum.com.br' }, 
       { protocol: 'https', hostname: 'img.pichau.com.br' },
+      { protocol: 'https', hostname: 'vercel.com' }, // Para o avatar da Vercel
     ],
   },
 
-  // --- CABEÇALHO CSP CORRIGIDO (v11.10) ---
+  // --- CABEÇALHO CSP CORRIGIDO ---
   async headers() {
     
-    // --- LISTAS CORRIGIDAS (sem erros de digitação) ---
+    // Lista de domínios permitidos para imagens
     const imageSources = [
       "'self'",
       "data:",
       "https://*.vercel-insights.com", 
       "https://*.vercel.live", 
-      "https://*.googleads.g.doubleclick.net", 
-      "https://*.googlesyndication.com", 
-      "https://*.kabum.com.br", // <-- Cobre img. e hotsite.
-      "https://*.pichau.com.br", // <-- Cobre img. e hotsite.
-      "https://*.terabyteshop.com.br", // <-- Cobre img.
+      "https://vercel.com", // Para o avatar da Vercel
+      
+      // Domínios da Descrição e Principais
+      "https://*.terabyteshop.com.br", 
+      "https://*.pichau.com.br", 
+      "https://*.kabum.com.br", 
+
+      // AdSense
+      "https://googleads.g.doubleclick.net", 
+      "https://pagead2.googlesyndication.com", 
     ];
     
+    // Lista de domínios permitidos para scripts
     const scriptSources = [
       "'self'",
       "'unsafe-eval'",
       "'unsafe-inline'", 
       "https://www.googletagmanager.com",
-      "https_://pagead2.googlesyndication.com",
-      "https_://vercel.live",
+      "https://pagead2.googlesyndication.com",
+      "https://vercel.live",
+      "https://*.vercel-insights.com", // Analytics
     ];
 
+    // Lista de domínios permitidos para estilos
     const styleSources = [
       "'self'",
-      "'unsafe-inline'", // Necessário para Pichau e componentes
+      "'unsafe-inline'", // Pichau precisa disso
       "https://fonts.googleapis.com",
       "https_://*.pichau.com.br", // Permite CSS da descrição Pichau
     ];
 
+    // Lista de domínios permitidos para conexão (API, etc)
     const connectSources = [
       "'self'",
       "https://api-comparador-backend.onrender.com", // Sua API
       "https://vitals.vercel-insights.com", 
-      "https_://vercel.live",
-      "https_://*.googleads.g.doubleclick.net", 
-      "https_://*.googlesyndication.com", 
+      "https://vercel.live",
+      "https://*.googleads.g.doubleclick.net", 
+      "https://*.googlesyndication.com", 
     ];
 
     const fontSources = [
@@ -62,12 +72,11 @@ const nextConfig = {
     const frameSources = [
       "'self'",
       "https://vercel.live",
-      "https_://googleads.g.doubleclick.net",
-      "https_://pagead2.googlesyndication.com",
+      "https://googleads.g.doubleclick.net",
+      "https://pagead2.googlesyndication.com",
     ];
-    // --- FIM DAS LISTAS ---
 
-    // Garante que todos os https_:// sejam https://
+    // Remove todos os erros de 'https_://'
     const cspHeader = [
       `default-src 'self'`,
       `script-src ${scriptSources.join(' ')}`,
@@ -80,7 +89,7 @@ const nextConfig = {
       `base-uri 'self'`,
       `form-action 'self'`,
       `media-src 'self'`,
-    ].join('; ').replace(/httpss?_?:\/\//g, 'https://'); // Garante que todos os erros de digitação sejam https://
+    ].join('; ').replace(/httpss?_?:\/\//g, 'https://'); // Garante que tudo seja https://
 
     return [
       {
