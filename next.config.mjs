@@ -1,5 +1,5 @@
 // Conteúdo para: meu_comparador_frontend/next.config.mjs
-// (v11.6 - CORREÇÃO REAL do erro de sintaxe '->//')
+// (v11.7 - CORREÇÃO FINAL do erro de sintaxe 'https_://')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -29,8 +29,8 @@ const nextConfig = {
       "https://hotsite.kabum.com.br", 
       
       // DOMÍNIOS PRINCIPAIS (CORRIGIDOS)
-      "https_://img.kabum.com.br", // <-- CORRIGIDO
-      "https_://img.pichau.com.br", // <-- CORRIGIDO
+      "https://img.kabum.com.br", // <-- CORRIGIDO
+      "https://img.pichau.com.br", // <-- CORRIGIDO
 
       // AdSense
       "https://googleads.g.doubleclick.net", 
@@ -85,7 +85,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: cspHeader.replace("https->//", "https://"), // Correção de segurança
+            value: cspHeader,
           },
         ],
       },
