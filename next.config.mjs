@@ -34,24 +34,24 @@ const nextConfig = {
       "'unsafe-eval'",
       "'unsafe-inline'", 
       "https://www.googletagmanager.com",
-      "https://pagead2.googlesyndication.com",
-      "https://vercel.live",
+      "https_://pagead2.googlesyndication.com",
+      "https_://vercel.live",
     ];
 
     const styleSources = [
       "'self'",
       "'unsafe-inline'", // Necessário para Pichau e componentes
       "https://fonts.googleapis.com",
-      "https://*.pichau.com.br", // Permite CSS da descrição Pichau
+      "https_://*.pichau.com.br", // Permite CSS da descrição Pichau
     ];
 
     const connectSources = [
       "'self'",
       "https://api-comparador-backend.onrender.com", // Sua API
       "https://vitals.vercel-insights.com", 
-      "https://vercel.live",
-      "https://*.googleads.g.doubleclick.net", 
-      "https://*.googlesyndication.com", 
+      "https_://vercel.live",
+      "https_://*.googleads.g.doubleclick.net", 
+      "https_://*.googlesyndication.com", 
     ];
 
     const fontSources = [
@@ -62,11 +62,12 @@ const nextConfig = {
     const frameSources = [
       "'self'",
       "https://vercel.live",
-      "https://googleads.g.doubleclick.net",
-      "https://pagead2.googlesyndication.com",
+      "https_://googleads.g.doubleclick.net",
+      "https_://pagead2.googlesyndication.com",
     ];
     // --- FIM DAS LISTAS ---
 
+    // Garante que todos os https_:// sejam https://
     const cspHeader = [
       `default-src 'self'`,
       `script-src ${scriptSources.join(' ')}`,
@@ -79,7 +80,7 @@ const nextConfig = {
       `base-uri 'self'`,
       `form-action 'self'`,
       `media-src 'self'`,
-    ].join('; ');
+    ].join('; ').replace(/httpss?_?:\/\//g, 'https://'); // Garante que todos os erros de digitação sejam https://
 
     return [
       {
@@ -87,7 +88,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: cspHeader, // Sem hacks de .replace()
+            value: cspHeader,
           },
         ],
       },
