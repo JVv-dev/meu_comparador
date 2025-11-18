@@ -1,5 +1,5 @@
 // Conteúdo para: meu_comparador_frontend/next.config.mjs
-// (v11.9 - Correção Final da Política de Segurança)
+// (v11.10 - Correção CSP Final com Wildcards)
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -13,24 +13,22 @@ const nextConfig = {
     ],
   },
 
+  // --- CABEÇALHO CSP CORRIGIDO (v11.10) ---
   async headers() {
     
-    // Lista de domínios permitidos para imagens
+    // --- LISTAS CORRIGIDAS (sem erros de digitação) ---
     const imageSources = [
       "'self'",
       "data:",
-      "https_://*.vercel-insights.com", 
-      "https_://*.vercel.live", 
-      "https://img.terabyteshop.com.br", 
-      "https://hotsite.pichau.com.br", 
-      "https://hotsite.kabum.com.br", 
-      "https://img.kabum.com.br",
-      "https://img.pichau.com.br",
-      "https://googleads.g.doubleclick.net", 
-      "https://pagead2.googlesyndication.com", 
+      "https://*.vercel-insights.com", 
+      "https://*.vercel.live", 
+      "https://*.googleads.g.doubleclick.net", 
+      "https://*.googlesyndication.com", 
+      "https://*.kabum.com.br", // <-- Cobre img. e hotsite.
+      "https://*.pichau.com.br", // <-- Cobre img. e hotsite.
+      "https://*.terabyteshop.com.br", // <-- Cobre img.
     ];
     
-    // Lista de domínios permitidos para scripts
     const scriptSources = [
       "'self'",
       "'unsafe-eval'",
@@ -40,45 +38,48 @@ const nextConfig = {
       "https://vercel.live",
     ];
 
-    // --- INÍCIO DA CORREÇÃO (v11.9) ---
-    // Lista de domínios permitidos para estilos
     const styleSources = [
       "'self'",
-      "'unsafe-inline'", // Necessário para o `shadcn/ui` e `next-themes`
-      "https_://fonts.googleapis.com",
-      
-      // Adiciona os domínios de imagem aqui também (para o CSS da Pichau)
-      "https://hotsite.pichau.com.br",
-      "https://img.terabyteshop.com.br", 
-      "https://hotsite.kabum.com.br", 
-      "https://img.kabum.com.br",
-      "https://img.pichau.com.br",
+      "'unsafe-inline'", // Necessário para Pichau e componentes
+      "https://fonts.googleapis.com",
+      "https://*.pichau.com.br", // Permite CSS da descrição Pichau
     ];
-    // --- FIM DA CORREÇÃO ---
 
-    // Lista de domínios permitidos para conexão (API, etc)
     const connectSources = [
       "'self'",
       "https://api-comparador-backend.onrender.com", // Sua API
-      "https_://vitals.vercel-insights.com", // Vercel
-      "https_://vercel.live",
-      "https://googleads.g.doubleclick.net", 
-      "https://pagead2.googlesyndication.com", 
+      "https://vitals.vercel-insights.com", 
+      "https://vercel.live",
+      "https://*.googleads.g.doubleclick.net", 
+      "https://*.googlesyndication.com", 
     ];
+
+    const fontSources = [
+      "'self'",
+      "https://fonts.gstatic.com",
+    ];
+
+    const frameSources = [
+      "'self'",
+      "https://vercel.live",
+      "https://googleads.g.doubleclick.net",
+      "https://pagead2.googlesyndication.com",
+    ];
+    // --- FIM DAS LISTAS ---
 
     const cspHeader = [
       `default-src 'self'`,
       `script-src ${scriptSources.join(' ')}`,
-      `style-src ${styleSources.join(' ')}`, // <-- A lista corrigida é usada aqui
+      `style-src ${styleSources.join(' ')}`,
       `img-src ${imageSources.join(' ')}`,
       `connect-src ${connectSources.join(' ')}`,
-      `font-src 'self' https://fonts.gstatic.com`,
-      `frame-src 'self' https_://vercel.live https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com`,
+      `font-src ${fontSources.join(' ')}`,
+      `frame-src ${frameSources.join(' ')}`,
       `object-src 'none'`,
       `base-uri 'self'`,
       `form-action 'self'`,
       `media-src 'self'`,
-    ].join('; ').replace(/httpss?_?:\/\//g, 'https://'); // Garante que todos os erros de digitação sejam https://
+    ].join('; ');
 
     return [
       {
@@ -86,13 +87,13 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: cspHeader,
+            value: cspHeader, // Sem hacks de .replace()
           },
         ],
       },
     ];
   },
-  
+  // --- FIM DA CORREÇÃO ---
 };
 
 export default nextConfig;
