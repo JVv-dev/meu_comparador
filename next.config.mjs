@@ -1,20 +1,23 @@
 // Conteúdo para: meu_comparador_frontend/next.config.mjs
-// (v11.11 - CORREÇÃO FINAL de sintaxe do CSP)
+// (v11.12 - Correção CSP Final com Wildcards)
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
     remotePatterns: [
-      { protocol: 'https', hostname: 'img.terabyteshop.com.br' },
-      { protocol: 'https', hostname: 'hotsite.pichau.com.br' },
-      { protocol: 'https', hostname: 'hotsite.kabum.com.br' },
+      // Domínios principais
       { protocol: 'https', hostname: 'img.kabum.com.br' }, 
       { protocol: 'https', hostname: 'img.pichau.com.br' },
+      { protocol: 'https', hostname: 'img.terabyteshop.com.br' },
+      // Domínios da descrição
+      { protocol: 'https', hostname: 'hotsite.pichau.com.br' },
+      { protocol: 'https', hostname: 'hotsite.kabum.com.br' },
+      // Outros
       { protocol: 'https', hostname: 'vercel.com' }, // Para o avatar da Vercel
     ],
   },
 
-  // --- CABEÇALHO CSP CORRIGIDO ---
+  // --- CABEÇALHO CSP CORRIGIDO (v11.12) ---
   async headers() {
     
     // Lista de domínios permitidos para imagens
@@ -24,15 +27,12 @@ const nextConfig = {
       "https://*.vercel-insights.com", 
       "https://*.vercel.live", 
       "https://vercel.com", // Para o avatar da Vercel
-      
-      // Domínios da Descrição e Principais
-      "https://*.terabyteshop.com.br", 
-      "https://*.pichau.com.br", 
+      "https://*.googleads.g.doubleclick.net", 
+      "https://*.googlesyndication.com", 
+      // Wildcards para cobrir TODOS os subdomínios
       "https://*.kabum.com.br", 
-
-      // AdSense
-      "https://googleads.g.doubleclick.net", 
-      "https://pagead2.googlesyndication.com", 
+      "https://*.pichau.com.br", 
+      "https://*.terabyteshop.com.br", 
     ];
     
     // Lista de domínios permitidos para scripts
@@ -49,9 +49,9 @@ const nextConfig = {
     // Lista de domínios permitidos para estilos
     const styleSources = [
       "'self'",
-      "'unsafe-inline'", // Pichau precisa disso
+      "'unsafe-inline'", // Pichau/Shadcn precisa disso
       "https://fonts.googleapis.com",
-      "https_://*.pichau.com.br", // Permite CSS da descrição Pichau
+      "https://*.pichau.com.br", // Permite CSS da descrição Pichau
     ];
 
     // Lista de domínios permitidos para conexão (API, etc)
@@ -76,7 +76,6 @@ const nextConfig = {
       "https://pagead2.googlesyndication.com",
     ];
 
-    // Remove todos os erros de 'https_://'
     const cspHeader = [
       `default-src 'self'`,
       `script-src ${scriptSources.join(' ')}`,
@@ -89,7 +88,7 @@ const nextConfig = {
       `base-uri 'self'`,
       `form-action 'self'`,
       `media-src 'self'`,
-    ].join('; ').replace(/httpss?_?:\/\//g, 'https://'); // Garante que tudo seja https://
+    ].join('; '); // Removido o .replace() desnecessário
 
     return [
       {
