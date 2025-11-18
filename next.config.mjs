@@ -1,5 +1,5 @@
 // Conteúdo para: meu_comparador_frontend/next.config.mjs
-// (v11.8 - CORREÇÃO FINAL do erro de sintaxe)
+// (v11.9 - Correção Final da Política de Segurança)
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -13,26 +13,19 @@ const nextConfig = {
     ],
   },
 
-  // --- CABEÇALHO CSP CORRIGIDO ---
   async headers() {
     
     // Lista de domínios permitidos para imagens
     const imageSources = [
       "'self'",
       "data:",
-      "https://*.vercel-insights.com", 
-      "https://*.vercel.live", 
-      
-      // Domínios da Descrição
+      "https_://*.vercel-insights.com", 
+      "https_://*.vercel.live", 
       "https://img.terabyteshop.com.br", 
       "https://hotsite.pichau.com.br", 
       "https://hotsite.kabum.com.br", 
-      
-      // DOMÍNIOS PRINCIPAIS (CORRIGIDOS)
-      "https://img.kabum.com.br", // <-- Corrigido
-      "https://img.pichau.com.br", // <-- Corrigido
-
-      // AdSense
+      "https://img.kabum.com.br",
+      "https://img.pichau.com.br",
       "https://googleads.g.doubleclick.net", 
       "https://pagead2.googlesyndication.com", 
     ];
@@ -47,19 +40,28 @@ const nextConfig = {
       "https://vercel.live",
     ];
 
+    // --- INÍCIO DA CORREÇÃO (v11.9) ---
     // Lista de domínios permitidos para estilos
     const styleSources = [
       "'self'",
-      "'unsafe-inline'", // Pichau precisa disso
-      "https://fonts.googleapis.com",
+      "'unsafe-inline'", // Necessário para o `shadcn/ui` e `next-themes`
+      "https_://fonts.googleapis.com",
+      
+      // Adiciona os domínios de imagem aqui também (para o CSS da Pichau)
+      "https://hotsite.pichau.com.br",
+      "https://img.terabyteshop.com.br", 
+      "https://hotsite.kabum.com.br", 
+      "https://img.kabum.com.br",
+      "https://img.pichau.com.br",
     ];
+    // --- FIM DA CORREÇÃO ---
 
     // Lista de domínios permitidos para conexão (API, etc)
     const connectSources = [
       "'self'",
       "https://api-comparador-backend.onrender.com", // Sua API
-      "https://vitals.vercel-insights.com", // Vercel
-      "https://vercel.live",
+      "https_://vitals.vercel-insights.com", // Vercel
+      "https_://vercel.live",
       "https://googleads.g.doubleclick.net", 
       "https://pagead2.googlesyndication.com", 
     ];
@@ -67,31 +69,30 @@ const nextConfig = {
     const cspHeader = [
       `default-src 'self'`,
       `script-src ${scriptSources.join(' ')}`,
-      `style-src ${styleSources.join(' ')}`,
+      `style-src ${styleSources.join(' ')}`, // <-- A lista corrigida é usada aqui
       `img-src ${imageSources.join(' ')}`,
       `connect-src ${connectSources.join(' ')}`,
       `font-src 'self' https://fonts.gstatic.com`,
-      `frame-src 'self' https://vercel.live https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com`,
+      `frame-src 'self' https_://vercel.live https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com`,
       `object-src 'none'`,
       `base-uri 'self'`,
       `form-action 'self'`,
       `media-src 'self'`,
-    ].join('; ');
+    ].join('; ').replace(/httpss?_?:\/\//g, 'https://'); // Garante que todos os erros de digitação sejam https://
 
     return [
       {
-        // Aplica esta política em TODAS as rotas do site
         source: '/:path*',
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: cspHeader, // Removido o .replace() que não funcionava
+            value: cspHeader,
           },
         ],
       },
     ];
   },
-  // --- FIM DA CORREÇÃO ---
+  
 };
 
 export default nextConfig;
