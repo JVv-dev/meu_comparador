@@ -1,10 +1,10 @@
 // Conteúdo para: meu_comparador_frontend/app/produto/[slug]/page.tsx
-// (v11.2 - Com Card de Descrição + Correção shrink-0)
+// (v11.4 - Correção URL + Card de Descrição + Shrink-0)
 
-"use client" // Esta é uma página do lado do cliente
+"use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { useParams } from 'next/navigation' // Hook para ler a URL
+import { useParams } from 'next/navigation' 
 import Link from "next/link" 
 import {
  LineChart,
@@ -24,9 +24,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Terminal, TrendingDown, ExternalLink, Star, ShoppingCart, Trophy, Flame, AlertCircle } from "lucide-react"
 import { AdBanner } from '@/components/AdBanner' 
 
-// ---
-// As interfaces que copiamos do product-comparison.tsx
-// ---
+// Interfaces
 interface Store {
  name: string
  price: number
@@ -51,13 +49,10 @@ interface Product {
  priceHistory: PriceHistoryEntry[]
  precoMinimoHistorico?: number 
  precoMedioHistorico?: number 
- descricao: string; // <-- ADICIONADO AQUI
+ descricao: string; // Campo para o HTML da descrição
 }
-// --- Fim das Interfaces ---
 
-// ---
-// A lógica do gráfico que copiamos do price-history-modal.tsx
-// ---
+// Configuração do Gráfico
 const storeColors: { [key: string]: string } = {
  Kabum: "#FF6400",
  Pichau: "#35A2EB",
@@ -83,18 +78,15 @@ const CustomTooltip = ({ active, payload, label }: any) => {
    }
    return null;
 };
-// --- Fim da lógica do gráfico ---
 
-
-// --- O Componente da Página de Produto ---
+// Componente da Página
 export default function ProdutoPage() {
-  const params = useParams(); // Hook para ler o [slug] da URL
+  const params = useParams();
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Pega o slug (ex: "RTX%204070") da URL
     const slug = params.slug;
 
     if (slug) {
@@ -102,17 +94,26 @@ export default function ProdutoPage() {
         setIsLoading(true);
         setError(null);
         try {
-          // Decodifica o slug (ex: "RTX%204070" -> "RTX 4070")
           const productName = decodeURIComponent(slug as string);
           
-          // Chama a *nova* rota da API que criamos
-          const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || "https://api-comparador-backend.onrender.com"}/api/product/${productName}`;
-          console.log(`Buscando produto: ${apiUrl}`);
+          // --- CORREÇÃO DA URL (FIX FINAL) ---
+          // Pega a URL base definida no ambiente (pode vir com /api/products no final)
+          const envApiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api-comparador-backend.onrender.com/api/products";
+          
+          // Remove o sufixo '/api/products' (e barra final opcional) para pegar a raiz limpa
+          const baseApiUrl = envApiUrl.replace(/\/api\/products\/?$/, ''); 
+          
+          // Monta a URL correta: raiz + /api/product/NomeDoProduto
+          const apiUrl = `${baseApiUrl}/api/product/${encodeURIComponent(productName)}`;
+          
+          console.log(`Buscando produto em: ${apiUrl}`);
 
           const response = await fetch(apiUrl);
 
           if (!response.ok) {
-            throw new Error(`Produto não encontrado (${response.status})`);
+             let msg = `Erro ${response.status}`;
+             try { const errJson = await response.json(); if(errJson.error) msg = errJson.error; } catch(e){}
+             throw new Error(msg);
           }
 
           const data = await response.json();
@@ -126,9 +127,9 @@ export default function ProdutoPage() {
       }
       fetchProduct();
     }
-  }, [params.slug]); // Roda sempre que o slug da URL mudar
+  }, [params.slug]);
 
-  // --- Lógica de dados para o Gráfico (copiado do modal) ---
+  // Lógica do Gráfico
   const { data: chartData, stores: uniqueLojas } = useMemo(() => {
     if (!product || !product.priceHistory || product.priceHistory.length === 0) {
       return { data: [], stores: [] };
@@ -154,13 +155,12 @@ export default function ProdutoPage() {
     );
     return { data: sortedData, stores: Array.from(stores) };
   }, [product]);
-  // --- Fim da lógica do gráfico ---
   
   const handleStoreClick = (affiliateLink: string) => {
     window.open(affiliateLink, "_blank", "noopener,noreferrer")
   }
 
-  // --- RENDERIZAÇÃO ---
+  // --- Renderização ---
 
   if (isLoading) {
     return (
@@ -169,7 +169,6 @@ export default function ProdutoPage() {
         <div className="grid md:grid-cols-[300px_1fr] gap-8">
           <Skeleton className="aspect-square rounded-lg w-full" />
           <div className="space-y-4">
-            <Skeleton className="h-16 w-full rounded-lg" />
             <Skeleton className="h-16 w-full rounded-lg" />
             <Skeleton className="h-16 w-full rounded-lg" />
           </div>
@@ -186,37 +185,34 @@ export default function ProdutoPage() {
              <Terminal className="h-4 w-4" />
              <AlertTitle>Erro 404 - Produto Não Encontrado</AlertTitle>
              <AlertDescription>
-                 Não encontramos o produto que você está procurando.
-                 <br/>
-                 {/* O Link que estava faltando */}
-                 <Link href="/" className="underline mt-2">Voltar para a página inicial</Link>
+                 Não encontramos o produto que você está procurando. <br/>
+                 <Link href="/" className="underline mt-2 block font-bold">Voltar para a página inicial</Link>
              </AlertDescription>
            </Alert>
       </div>
     );
   }
 
-  if (!product) {
-    return null; // Não deve acontecer se não estiver carregando e sem erro
-  }
+  if (!product) return null;
 
-  // Lógica de cálculo (copiada do product-comparison)
   const validPrices = product.stores.filter(s => s.price > 0 && s.inStock).map(s => s.price);
   const lowestPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
   
-  // --- RENDERIZA A PÁGINA DO PRODUTO ---
   return (
     <main className="container mx-auto px-4 py-8 max-w-4xl">
-      {/* Cabeçalho do Produto */}
+      {/* Cabeçalho */}
       <div className="mb-8">
-        <Badge variant="secondary" className="mb-2">{product.category}</Badge>
+        <div className="flex items-center gap-2 mb-2">
+            <Link href="/" className="text-sm text-muted-foreground hover:underline">← Voltar</Link>
+            <Badge variant="secondary">{product.category}</Badge>
+        </div>
         <h1 className="text-3xl md:text-4xl font-bold text-balance">{product.name}</h1>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-8">
-        {/* Coluna da Imagem */}
+        {/* Imagem */}
         <div className="space-y-3">
-          <div className="aspect-square rounded-lg overflow-hidden bg-muted flex items-center justify-center border">
+          <div className="aspect-square rounded-lg overflow-hidden bg-white flex items-center justify-center border p-4">
             <img
               src={product.image || "/placeholder.svg"}
               alt={product.name}
@@ -225,54 +221,28 @@ export default function ProdutoPage() {
           </div>
         </div>
 
-        {/* Coluna das Lojas */}
+        {/* Lista de Lojas */}
         <div className="space-y-4">
-          <h2 className="text-2xl font-semibold">Preços Atuais</h2>
+          <h2 className="text-2xl font-semibold">Comparativo de Lojas</h2>
           <div className="space-y-3">
-            {/* Lógica de renderização de loja (copiada do product-comparison) */}
             {product.stores.map((store) => { 
               const isLowestPrice = store.price === lowestPrice && store.price > 0 && store.inStock;
               const isBestHistorical = product.precoMinimoHistorico && store.price > 0 && store.price <= product.precoMinimoHistorico;
-              const isBelowAverage = product.precoMedioHistorico && store.price > 0 && store.price < product.precoMedioHistorico && !isBestHistorical;
-
+              
               return (
-                <div
-                  key={store.name} 
-                  className={`border rounded-lg p-4 transition-all ${
-                    isLowestPrice ? "border-primary bg-primary/5" : "border-border"
-                  }`}
-                >
+                <div key={store.name} className={`border rounded-lg p-4 transition-all ${isLowestPrice ? "border-primary bg-primary/5" : "border-border"}`}>
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex-1 space-y-2 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="font-semibold text-lg truncate">{store.name}</h3>
-                        {isLowestPrice && (
-                          <Badge variant="default" className="text-xs shrink-0"> {/* <-- CORRIGIDO */}
-                             Melhor Preço
-                          </Badge>
-                        )}
-                        {isBestHistorical && (
-                          <Badge variant="outline" className="text-xs shrink-0 border-green-500 text-green-600"> {/* <-- CORRIGIDO */}
-                            <Trophy className="w-3 h-3 mr-1" />
-                            <span>Menor Preço Registrado!</span>
-                          </Badge>
-                        )}
-                        {isBelowAverage && (
-                          <Badge variant="outline" className="text-xs shrink-0 border-orange-500 text-orange-600"> {/* <-- CORRIGIDO */}
-                            <Flame className="w-3 h-3 mr-1" />
-                            <span>Abaixo da Média</span>
-                          </Badge>
-                        )}
-                        {!store.inStock && (
-                          <Badge variant="destructive" className="text-xs shrink-0"> {/* <-- CORRIGIDO */}
-                             Indisponível
-                          </Badge>
-                        )}
+                        {isLowestPrice && <Badge variant="default" className="text-xs shrink-0">Melhor Preço</Badge>}
+                        {isBestHistorical && <Badge variant="outline" className="text-xs shrink-0 border-green-500 text-green-600"><Trophy className="w-3 h-3 mr-1" />Menor Histórico</Badge>}
+                        {!store.inStock && <Badge variant="destructive" className="text-xs shrink-0">Indisponível</Badge>}
                       </div>
                       <p className="text-sm text-muted-foreground">{store.shipping}</p>
                     </div>
                     
-                    <div className="flex flex-col items-end gap-1 shrink-0"> {/* <-- CORRIGIDO */}
+                    <div className="flex flex-col items-end gap-1 shrink-0">
                       <div className={`text-2xl sm:text-3xl font-bold whitespace-nowrap ${store.inStock && store.price > 0 ? 'text-primary' : 'text-muted-foreground text-xl'}`}>
                         {store.inStock && store.price > 0 ? `R$ ${store.price.toFixed(2).replace(".", ",")}` : "Indisponível"}
                       </div>
@@ -295,38 +265,32 @@ export default function ProdutoPage() {
         </div>
       </div>
 
-      {/* --- CARD DE DESCRIÇÃO ADICIONADO AQUI --- */}
+      {/* CARD DE DESCRIÇÃO (Renderiza o HTML do banco) */}
       {product.descricao && (
         <Card className="mt-8">
           <CardHeader>
-            <CardTitle>Descrição do Produto</CardTitle>
+            <CardTitle>Detalhes Técnicos</CardTitle>
           </CardHeader>
           <CardContent>
-            {/* 'prose' vem do plugin @tailwindcss/typography
-              'dangerouslySetInnerHTML' é o comando do React para
-              renderizar uma string que contém HTML.
-            */}
             <div
-              className="prose prose-sm dark:prose-invert max-w-none"
+              className="prose prose-sm dark:prose-invert max-w-none overflow-hidden"
               dangerouslySetInnerHTML={{ __html: product.descricao }}
             />
           </CardContent>
         </Card>
       )}
-      {/* --- FIM DA DESCRIÇÃO --- */}
       
-      {/* Banner de Anúncio (copiado do product-comparison) */}
+      {/* Banner */}
       <div className="my-8 text-center" translate="no"> 
         <AdBanner dataAdSlot="3194989646" className="h-[100px]" /> 
       </div>
 
-      {/* Seção do Gráfico (Abaixo de tudo) */}
+      {/* Gráfico */}
       <Card className="mt-8 p-4 md:p-6">
-        <h2 className="text-2xl font-semibold mb-4">Histórico de Preços por Loja</h2>
+        <h2 className="text-2xl font-semibold mb-4">Histórico de Preços</h2>
         {chartData.length > 1 ? (
           <div className="h-[400px] w-full pt-4">
             <ResponsiveContainer width="100%" height="100%">
-              {/* Lógica do Gráfico (copiada do modal) */}
               <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 50 }}> 
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
                 <XAxis
@@ -367,7 +331,7 @@ export default function ProdutoPage() {
           </div>
         ) : (
           <div className="text-center text-muted-foreground py-8">
-            Não há dados de histórico suficientes para gerar o gráfico.
+            Histórico insuficiente para exibir o gráfico.
           </div>
         )}
       </Card>
