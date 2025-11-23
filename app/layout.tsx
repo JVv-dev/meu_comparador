@@ -3,8 +3,11 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import Script from 'next/script' 
 import './globals.css'
-// --- 1. Importe o ThemeProvider ---
+
+// --- Componentes Globais ---
 import { ThemeProvider } from "@/components/theme-provider" 
+import { Navbar } from "@/components/Navbar"
+import { Toaster } from "@/components/ui/toaster"
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
@@ -35,11 +38,6 @@ export default function RootLayout({
         strategy="afterInteractive" 
       />
 
-      {/* --- 2. Adicione um fundo que FUNCIONA --- */}
-      {/* slate-100 (Cinza claro) para Modo Claro
-        slate-950 (Cinza quase-preto) para Modo Escuro
-        Isso VAI ser diferente de branco/preto.
-      */}
       <body 
         className={`
           font-sans antialiased notranslate 
@@ -48,14 +46,20 @@ export default function RootLayout({
           dark:bg-slate-950
         `}
       > 
-        {/* --- 3. Ative o Provedor de Tema --- */}
         <ThemeProvider
             attribute="class"
             defaultTheme="system"
             enableSystem
             disableTransitionOnChange
         >
+          {/* Barra de Navegação Fixa no Topo */}
+          <Navbar />
+          
+          {/* Conteúdo Principal */}
           {children}
+          
+          {/* Componentes de UI Flutuantes */}
+          <Toaster />
           <Analytics />
         </ThemeProvider>
       </body>
