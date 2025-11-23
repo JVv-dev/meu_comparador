@@ -15,7 +15,7 @@ export function Navbar() {
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center space-x-2 font-bold text-xl">
             <ShoppingBag className="w-6 h-6 text-primary" />
-            <span className="hidden md:inline-block">Meu Comparador</span>
+            <span className="hidden md:inline-block">Produtos</span>
           </Link>
           
           <div className="flex gap-2">
