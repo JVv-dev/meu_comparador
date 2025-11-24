@@ -33,6 +33,7 @@ const nextConfig = {
       "https://pagead2.googlesyndication.com",
       "https://vercel.live",
       "https://*.vercel-insights.com",
+      "https://va.vercel-scripts.com"
     ];
 
     const styleSources = [
@@ -42,12 +43,12 @@ const nextConfig = {
       "https://*.pichau.com.br",
     ];
 
-    // --- CORREÇÃO AQUI: ADICIONADO LOCALHOST ---
+    // --- CORREÇÃO CRÍTICA AQUI: ADICIONADO LOCALHOST ---
     const connectSources = [
       "'self'",
       "https://api-comparador-backend.onrender.com",
-      "http://localhost:5001", // Permite conexão local
-      "http://127.0.0.1:5001", // Permite conexão local (IP)
+      "http://localhost:5001", // Permite Backend Local
+      "http://127.0.0.1:5001", // Permite Backend Local (IP)
       "https://vitals.vercel-insights.com", 
       "https://vercel.live",
       "https://*.googleads.g.doubleclick.net", 
