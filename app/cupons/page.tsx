@@ -22,13 +22,29 @@ export default function CuponsPage() {
     useEffect(() => {
         async function load() {
              try {
+                 // Lógica para determinar URL correta (Local ou Prod)
                  const envApiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api-comparador-backend.onrender.com/api/products";
                  const baseApiUrl = envApiUrl.replace(/\/api\/products\/?$/, '');
                  
                  const res = await fetch(`${baseApiUrl}/api/coupons`)
+                 
+                 // --- TRATAMENTO DE ERRO ROBUSTO ---
+                 if (!res.ok) {
+                     // Se der erro (ex: 404), lança exceção para o catch
+                     throw new Error(`Erro na API: ${res.status}`);
+                 }
+                 
                  const data = await res.json()
-                 setCupons(data)
-             } catch(e) { console.error(e) }
+                 
+                 if (Array.isArray(data)) {
+                    setCupons(data)
+                 } else {
+                    console.error("Formato inválido recebido:", data)
+                 }
+             } catch(e) { 
+                 console.error("Erro ao carregar cupons:", e) 
+                 // Não quebra a página, apenas loga o erro e para o loading
+             }
              finally { setLoading(false) }
         }
         load()
@@ -36,10 +52,7 @@ export default function CuponsPage() {
 
     const copyCode = (code: string) => {
         navigator.clipboard.writeText(code)
-        toast({ 
-            title: "Código Copiado!", 
-            description: `Cupom ${code} pronto para usar.` 
-        })
+        toast({ title: "Copiado!", description: `Cupom ${code} copiado.` })
     }
 
     return (
@@ -61,11 +74,9 @@ export default function CuponsPage() {
                             <CardHeader className="pb-3 bg-muted/30">
                                 <div className="flex justify-between items-start">
                                     <Badge variant="secondary" className="mb-2">Kabum</Badge>
-                                    {cupom.validade !== "Verificar no site" && (
-                                        <span className="text-[10px] text-muted-foreground bg-background px-2 py-1 rounded border">
-                                            {cupom.validade}
-                                        </span>
-                                    )}
+                                    <span className="text-[10px] text-muted-foreground bg-background px-2 py-1 rounded border">
+                                        {cupom.validade}
+                                    </span>
                                 </div>
                                 <CardTitle className="text-xl font-mono text-primary tracking-wide flex items-center gap-2">
                                     {cupom.codigo}
@@ -90,7 +101,7 @@ export default function CuponsPage() {
                         <div className="col-span-full text-center py-12 bg-muted/20 rounded-xl border-2 border-dashed">
                             <Ticket className="w-12 h-12 mx-auto text-muted-foreground mb-4 opacity-20" />
                             <h3 className="text-lg font-medium">Nenhum cupom encontrado</h3>
-                            <p className="text-muted-foreground">Os ninjas estão buscando novas ofertas. Volte em breve!</p>
+                            <p className="text-muted-foreground">Verifique se o scraper rodou recentemente ou se a API está online.</p>
                         </div>
                     )}
                 </div>
