@@ -72,7 +72,6 @@ export default function CuponsPage() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="pt-4">
-                                {/* CORREÇÃO AQUI: min-h-10 em vez de min-h-[40px] */}
                                 <p className="text-sm text-muted-foreground mb-6 min-h-10 line-clamp-2">
                                     {cupom.descricao}
                                 </p>

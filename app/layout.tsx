@@ -55,10 +55,10 @@ export default function RootLayout({
           {/* Barra de Navegação */}
           <Navbar />
           
-          {/* Conteúdo das Páginas */}
+          {/* Conteúdo Principal */}
           {children}
           
-          {/* Toasts (Notificações) */}
+          {/* Componentes Flutuantes */}
           <Toaster />
           <Analytics />
         </ThemeProvider>
