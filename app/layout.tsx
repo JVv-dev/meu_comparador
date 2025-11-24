@@ -52,13 +52,13 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
         >
-          {/* Barra de Navegação Fixa no Topo */}
+          {/* Barra de Navegação */}
           <Navbar />
           
-          {/* Conteúdo Principal */}
+          {/* Conteúdo das Páginas */}
           {children}
           
-          {/* Componentes de UI Flutuantes */}
+          {/* Toasts (Notificações) */}
           <Toaster />
           <Analytics />
         </ThemeProvider>
